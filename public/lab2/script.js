@@ -19,12 +19,6 @@ function loadPage() {
             
     const main = createElement('main', 'content');
 
-    const aboutSection = createElement('section', 'about');
-    const aboutTitle = createElement('h2', '', 'О себе');
-    const aboutText = createElement('p', '', 'Я начинающий фронтенд-разработчик, изучаю JavaScript и DOM manipulation.');
-    aboutSection.appendChild(aboutTitle);
-    aboutSection.appendChild(aboutText);
-
     const taskCreation = document.createElement('label');
     const taskInput = document.createElement('input');
     taskInput.type = 'text';
@@ -66,7 +60,6 @@ function loadPage() {
     // });
     taskCreation.appendChild(taskType);
               
-    main.appendChild(aboutSection);
     main.appendChild(taskCreation);
             
     app.appendChild(header);
