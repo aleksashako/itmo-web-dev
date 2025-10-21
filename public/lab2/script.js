@@ -1,26 +1,22 @@
-function createElement(tag, className, text = '') {
-    const element = document.createElement(tag);
-    if (className) element.className = className;
-    if (text) element.textContent = text;
-    return element;
-    }
-
 function loadPage() {
     let body = document.querySelector("body");
 
-    const app = createElement('div');
+    const app = document.createElement('div');
     body.appendChild(app);   
 
-    const header = createElement('header', 'page-header');
-    const title = createElement('h1', '', '~ TO-DO LIST ~');
-    const description = createElement('p', 'subtitle', 'интерактивный to-do list');
-    header.appendChild(title);
-    header.appendChild(description);
-            
-    const main = createElement('main', 'content');
+    const header = document.createElement('header');
+    header.className = 'page-header';
 
-    const taskCreation = document.createElement('label');
-    const taskInput = document.createElement('input');
+    const title = document.createElement('h1');
+    title.textContent = '~ TO-DO LIST ~';
+
+    header.appendChild(title);
+
+    const main = document.createElement('main');
+    main.className = 'content';
+
+    const taskCreation = document.createElement('form');
+    let taskInput = document.createElement('input');
     taskInput.type = 'text';
     taskInput.placeholder = 'put the task name';
     taskInput.className = 'task-input';
@@ -39,7 +35,7 @@ function loadPage() {
 
     const taskOptions = [
         { value: '0', text: '', className: 'empty' },
-        { value: '1', text: 'study', className: 'study-task' },
+        { value: '1', text: 'study', className: 'study-task' }, //хочу потом добавить цвета разных задач
         { value: '2', text: 'life' },
         { value: '3', text: 'sport' },
         { value: '4', text: 'friends' },
@@ -54,12 +50,26 @@ function loadPage() {
         taskType.appendChild(optionElement);
     });
 
-
-    // taskType.addEventListener('change', function() {
-    //     console.log('Выбран тип задачи:', this.value, this.options[this.selectedIndex].text);
-    // });
     taskCreation.appendChild(taskType);
-              
+
+    const taskCreationButton = document.createElement('button');
+    taskCreationButton.type = 'button';
+    taskCreationButton.className = 'task-creation-button';
+    taskCreationButton.textContent = '✔️';
+
+    taskCreationButton.addEventListener("click", () => {
+        listOfTasks.push({id: listOfTasks.length,
+            taskName: taskInput.value,
+            deadline: taskDate.value,
+            type: taskType.value
+        });
+        console.log(listOfTasks); 
+        console.log('button clicked. task created.');
+        saveToStorage();
+        taskCreation.reset(); //именно поэтому сделана form, а не label
+    })
+    taskCreation.appendChild(taskCreationButton);
+            
     main.appendChild(taskCreation);
             
     app.appendChild(header);
@@ -67,4 +77,10 @@ function loadPage() {
 
 }
 
+let listOfTasks = []
+
 document.addEventListener('DOMContentLoaded', loadPage);
+
+function saveToStorage() {
+    localStorage.setItem('currentTasks', JSON.stringify(listOfTasks));
+}
