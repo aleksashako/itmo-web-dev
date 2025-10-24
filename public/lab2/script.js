@@ -8,7 +8,7 @@ function loadPage() {
     header.className = 'page-header';
 
     const title = document.createElement('h1');
-    title.textContent = '~ TO-DO LIST ~';
+    title.textContent = '~ to-do list ~';
 
     header.appendChild(title);
 
@@ -24,6 +24,12 @@ function loadPage() {
     container.className = 'container-for-tasks';
     main.appendChild(container);
 
+    const clearBtnContainer = document.createElement('div');
+    clearBtnContainer.id = 'clearBtnContainer';
+    clearBtnContainer.className = 'clear-btn-container';
+    main.appendChild(clearBtnContainer);
+
+
     const statsContainer = document.createElement('div');
     statsContainer.id = 'statsContainer';
     statsContainer.className = 'stats-container';
@@ -34,7 +40,35 @@ function loadPage() {
 
     loadFromStorage();
     renderTasks();
+    createClearBtn();
     updateStatistics();
+}
+
+function addFavicon() {
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/x-icon';
+    link.href = 'favicon.ico';
+    
+    document.head.appendChild(link);
+}
+
+let listOfTasks = []
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadPage();
+    addFavicon();
+});
+
+function saveToStorage() {
+    localStorage.setItem('currentTasks', JSON.stringify(listOfTasks));
+}
+
+function loadFromStorage() {
+    const curTasks = localStorage.getItem('currentTasks');
+    if (curTasks) {
+        listOfTasks = JSON.parse(curTasks);
+    }
 }
 
 function createTaskForm(main) {
@@ -62,8 +96,8 @@ function createTaskForm(main) {
         { value: '0', text: '', className: 'empty' },
         { value: '1', text: 'study', className: 'study-task' }, //хочу потом добавить цвета разных задач
         { value: '2', text: 'life' },
-        { value: '3', text: 'sport' },
-        { value: '4', text: 'friends' },
+        { value: '3', text: 'work' },
+        { value: '4', text: 'family&friends' },
         { value: '5', text: 'other' }
     ];
 
@@ -88,12 +122,6 @@ function createTaskForm(main) {
             taskInput.focus();
             return;
         }
-    
-        // if (!taskDate.value) {
-        //     alert('you cannot create task without deadline');
-        //     taskDate.focus();
-        //     return;
-        // }
 
         listOfTasks.push({id: listOfTasks.length,
             taskName: taskInput.value,
@@ -118,13 +146,13 @@ function createControlPanel(main) {
     const controlPanel = document.createElement('div');
     controlPanel.className = 'control-panel';
 
-    const statusFilter = document.createElement('select');
+    let statusFilter = document.createElement('select');
     statusFilter.className = 'status-filter';
     
-    const statusOptions = [
-        { value: 'all', text: 'All tasks' },
-        { value: 'done', text: 'Done only' },
-        { value: 'not-done', text: 'Not done only' }
+    let statusOptions = [
+        { value: '', text: '' },
+        { value: 'done', text: 'done only' },
+        { value: 'not-done', text: 'not done only' }
     ];
     
     statusOptions.forEach(option => {
@@ -138,12 +166,28 @@ function createControlPanel(main) {
         filterByStatus(statusFilter.value);
     });
 
-    // let filterBtn = document.createElement('button');
-    // filterBtn.textContent = 'filter by status';
-    // filterBtn.className = 'control-btn';
-    // filterBtn.addEventListener('click', () => {
-    //     filterByStatus();
-    // });
+    let typeFilter = document.createElement('select');
+    typeFilter.className = 'type-filter';
+
+    let typeOptions = [
+        { value: '', text: '' },
+        { value: 'study', text: 'study' },
+        { value: 'life', text: 'life' },
+        { value: 'work', text: 'work' },
+        { value: 'family&friends', text: 'family&friends' },
+        { value: 'other', text: 'other' }
+    ];
+    
+    typeOptions.forEach(tOption => {
+        let optionEl = document.createElement('option');
+        optionEl.value = tOption.value;
+        optionEl.textContent = tOption.text;
+        typeFilter.appendChild(optionEl);
+    });
+    
+    typeFilter.addEventListener('change', () => {
+        filterByType(typeFilter.value);
+    });
 
     let filterBtnF = document.createElement('button');
     filterBtnF.textContent = 'show favourite';
@@ -157,13 +201,6 @@ function createControlPanel(main) {
     sortBtn.className = 'control-btn';
     sortBtn.addEventListener('click', () => {
         sortByDate();
-    });
-
-    let clearButton = document.createElement('button');
-    clearButton.textContent = 'clear list of tasks';
-    clearButton.className = 'clear-container-btn';
-    clearButton.addEventListener('click', () => {
-        clearTaskContainer();
     });
 
     let showAllBtn = document.createElement('button');
@@ -196,62 +233,12 @@ function createControlPanel(main) {
     controlPanel.appendChild(subString);
     controlPanel.appendChild(searchingBtn);
     controlPanel.appendChild(statusFilter);
+    controlPanel.appendChild(typeFilter);
     controlPanel.appendChild(filterBtnF);
     controlPanel.appendChild(sortBtn);
-    controlPanel.appendChild(clearButton);
 
     main.appendChild(controlPanel);
 
-}
-
-function updateStatistics() {
-    const statsContainer = document.getElementById('statsContainer');
-    statsContainer.replaceChildren();
-
-    let statisticsLine = document.createElement('div');
-    statisticsLine.className = 'statistics-line';
-
-    let stat1 = document.createElement('span'); 
-    stat1.textContent = `total: ${listOfTasks.length}`;
-
-    let stat2 = document.createElement('span');
-    stat2.textContent = `done: ${listOfTasks.filter(t => t.isDone).length}`; 
-
-    let stat3 = document.createElement('span');
-    stat3.textContent = `to be done: ${listOfTasks.filter(t => !t.isDone).length}`;
-
-    statisticsLine.appendChild(stat1);
-    statisticsLine.appendChild(stat2);
-    statisticsLine.appendChild(stat3);
-
-    statsContainer.appendChild(statisticsLine);
-}
-
-function addFavicon() {
-    const link = document.createElement('link');
-    link.rel = 'icon';
-    link.type = 'image/x-icon';
-    link.href = 'favicon.ico';
-    
-    document.head.appendChild(link);
-}
-
-let listOfTasks = []
-
-document.addEventListener('DOMContentLoaded', () => {
-    loadPage();
-    addFavicon();
-});
-
-function saveToStorage() {
-    localStorage.setItem('currentTasks', JSON.stringify(listOfTasks));
-}
-
-function loadFromStorage() {
-    const curTasks = localStorage.getItem('currentTasks');
-    if (curTasks) {
-        listOfTasks = JSON.parse(curTasks);
-    }
 }
 
 function renderTasks(taskList = null) {
@@ -323,6 +310,43 @@ function renderTasks(taskList = null) {
     updateStatistics();
 }
 
+function createClearBtn() {
+    const clearBtnContainer = document.getElementById('clearBtnContainer');
+    clearBtnContainer.replaceChildren();
+
+    let clearButton = document.createElement('button');
+    clearButton.textContent = 'clear all tasks';
+    clearButton.className = 'clear-container-btn';
+    clearButton.addEventListener('click', () => {
+        clearTaskContainer();
+    });
+
+    clearBtnContainer.appendChild(clearButton);
+}
+
+function updateStatistics() {
+    const statsContainer = document.getElementById('statsContainer');
+    statsContainer.replaceChildren();
+
+    let statisticsLine = document.createElement('div');
+    statisticsLine.className = 'statistics-line';
+
+    let stat1 = document.createElement('span'); 
+    stat1.textContent = `total: ${listOfTasks.length}`;
+
+    let stat2 = document.createElement('span');
+    stat2.textContent = `done: ${listOfTasks.filter(t => t.isDone).length}`; 
+
+    let stat3 = document.createElement('span');
+    stat3.textContent = `to be done: ${listOfTasks.filter(t => !t.isDone).length}`;
+
+    statisticsLine.appendChild(stat1);
+    statisticsLine.appendChild(stat2);
+    statisticsLine.appendChild(stat3);
+
+    statsContainer.appendChild(statisticsLine);
+}
+
 function clearTaskContainer() {
     const container = document.getElementById('containerForTasks');
     container.replaceChildren();
@@ -368,29 +392,49 @@ function favTask(taskId) {
     renderTasks();
 }
 
-// function filterByStatus() {
-//     let doneList = listOfTasks.filter(t => t.isDone == true);
-//     renderTasks(doneList);
-// }
-
 function filterByStatus(status) {
     let filteredList;
     
     switch(status) {
+         case ' ':
+            filteredList = listOfTasks;
+            break;
         case 'done':
             filteredList = listOfTasks.filter(t => t.isDone === true);
             break;
         case 'not-done':
             filteredList = listOfTasks.filter(t => t.isDone === false);
             break;
-        case 'all':
-        default:
-            filteredList = listOfTasks;
+    }
+    
+    renderTasks(filteredList);
+}
+
+function filterByType(type) {
+    let filteredList;
+    
+    switch(type) {
+        case ' ':
+            filteredList = listOfTasks.filter(t => t.type == 0);
+            break;
+        case 'study':
+            filteredList = listOfTasks.filter(t => t.type == 1);
+            break;
+        case 'life':
+            filteredList = listOfTasks.filter(t => t.type == 2);
+            break;
+        case 'work':
+            filteredList = listOfTasks.filter(t => t.type == 3);
+            break;
+        case 'family&friends':
+            filteredList = listOfTasks.filter(t => t.type == 4);
+            break;
+        case 'other':
+            filteredList = listOfTasks.filter(t => t.type == 5);
             break;
     }
     
     renderTasks(filteredList);
-    console.log(`Showing: ${status}`);
 }
 
 function filterByFavoritness() {
