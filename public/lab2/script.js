@@ -102,15 +102,17 @@ function loadFromStorage() {
     }
 }
 
-function renderTasks() {
+function renderTasks(taskList = null) {
     loadFromStorage();
 
     const container = document.getElementById('containerForTasks');
     container.replaceChildren();
 
     const fragment = document.createDocumentFragment();
+
+    const taskToRender = taskList || listOfTasks; // для выполнения фильтров и сортировки
   
-    listOfTasks.forEach(t => {
+    taskToRender.forEach(t => {
         const taskElement = document.createElement('div');
         taskElement.className = 'task-item';
         taskElement.draggable = 'true';
@@ -150,6 +152,20 @@ function renderTasks() {
         favBtn.addEventListener('click', () => {
             favTask(t.id);
         });
+
+        let filterBtn = document.createElement('button');
+        filterBtn.textContent = 'filter by status';
+
+        filterBtn.addEventListener('click', () => {
+            filterByStatus();
+        });
+
+        let sortBtn = document.createElement('button');
+        filterBtn.textContent = 'filter by status';
+
+        filterBtn.addEventListener('click', () => {
+            filterByStatus();
+        });
         
         infoDiv.appendChild(deadline);
         infoDiv.appendChild(type);
@@ -161,6 +177,7 @@ function renderTasks() {
         // taskElement.appendChild(editTask);
         taskElement.append(deleteBtn);
         
+        fragment.appendChild(filterBtn);
         fragment.appendChild(taskElement);
 
     });
@@ -168,7 +185,7 @@ function renderTasks() {
     container.appendChild(fragment);
 
     const clearButton = document.createElement('button');
-    clearButton.textContent = '❌';
+    clearButton.textContent = 'Clear list of tasks';
     clearButton.className = 'clear-container-btn';
     clearButton.addEventListener('click', () => {
         clearTaskContainer();
@@ -198,27 +215,32 @@ function deleteTask(taskId) {
 function markTaskAsDone(taskId){
     task = listOfTasks.find(t => t.id == taskId);
 
-if (task) {
-    task.isDone = !task.isDone;
-    saveToStorage();
-    renderTasks();
-    console.log(`Task "${task.taskName}" marked as ${task.isDone ? 'done' : 'not done'}`);
+    if (task) {
+        task.isDone = !task.isDone;
+        saveToStorage();
+        renderTasks();
+        console.log(`Task "${task.taskName}" marked as ${task.isDone ? 'done' : 'not done'}`);
     };
 
     saveToStorage();
     renderTasks();
 }
 
-function favTask(taskId){
+function favTask(taskId) {
     task = listOfTasks.find(t => t.id == taskId);
 
-if (task) {
-    task.isFav = !task.isFav; // меняет состояние, чтобы кнопка две функции выполняла
-    saveToStorage();
-    renderTasks();
-    console.log(`Task "${task.taskName}" marked as ${task.isFav ? 'fav' : 'not fav'}`);
+    if (task) {
+        task.isFav = !task.isFav; // меняет состояние, чтобы кнопка две функции выполняла
+        saveToStorage();
+        renderTasks();
+        console.log(`Task "${task.taskName}" marked as ${task.isFav ? 'fav' : 'not fav'}`);
     };
-
+    
     saveToStorage();
     renderTasks();
+}
+
+function filterByStatus() {
+    let doneList = listOfTasks.filter(t => t.isDone == true);
+    renderTasks(doneList);
 }
