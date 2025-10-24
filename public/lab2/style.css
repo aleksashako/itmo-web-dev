@@ -4,11 +4,21 @@
     box-sizing: border-box;
 }
 
-body {
+main {
     width: 600px;
     margin: 20px auto;
     background-color: #c8e3f5;
     padding: 20px 20px 20px 20px;
     border: 2px solid rgb(34, 45, 96);
     border-radius: 10px;
+}
+
+.container-for-tasks {
+    width: 600px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    padding: 20px 20px 20px 20px;
+    border: 2px solid rgb(171, 60, 115);
+    border-radius: 10px;
+
 }
