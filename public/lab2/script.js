@@ -58,6 +58,18 @@ function loadPage() {
     taskCreationButton.textContent = '✔️';
 
     taskCreationButton.addEventListener("click", () => {
+        if (!taskInput.value.trim()) {
+            alert('you cannot create task without any task-name. please, write done one');
+            taskInput.focus();
+            return;
+        }
+    
+        // if (!taskDate.value) {
+        //     alert('you cannot create task without deadline');
+        //     taskDate.focus();
+        //     return;
+        // }
+
         listOfTasks.push({id: listOfTasks.length,
             taskName: taskInput.value,
             deadline: taskDate.value,
@@ -70,7 +82,7 @@ function loadPage() {
         saveToStorage();
         renderTasks();
         taskCreation.reset(); //именно поэтому сделана form, а не label
-    })
+    });
     taskCreation.appendChild(taskCreationButton);
             
     main.appendChild(taskCreation);
@@ -87,9 +99,21 @@ function loadPage() {
 
 }
 
+function addFavicon() {
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/x-icon';
+    link.href = 'favicon.ico';
+    
+    document.head.appendChild(link);
+}
+
 let listOfTasks = []
 
-document.addEventListener('DOMContentLoaded', loadPage);
+document.addEventListener('DOMContentLoaded', () => {
+    loadPage();
+    addFavicon();
+});
 
 function saveToStorage() {
     localStorage.setItem('currentTasks', JSON.stringify(listOfTasks));
@@ -109,6 +133,7 @@ function renderTasks(taskList = null) {
     container.replaceChildren();
 
     const fragment = document.createDocumentFragment();
+    fragment.replaceChildren();
 
     const taskToRender = taskList || listOfTasks; // для выполнения фильтров и сортировки
   
@@ -152,20 +177,6 @@ function renderTasks(taskList = null) {
         favBtn.addEventListener('click', () => {
             favTask(t.id);
         });
-
-        let filterBtn = document.createElement('button');
-        filterBtn.textContent = 'filter by status';
-
-        filterBtn.addEventListener('click', () => {
-            filterByStatus();
-        });
-
-        let sortBtn = document.createElement('button');
-        filterBtn.textContent = 'filter by status';
-
-        filterBtn.addEventListener('click', () => {
-            filterByStatus();
-        });
         
         infoDiv.appendChild(deadline);
         infoDiv.appendChild(type);
@@ -177,12 +188,24 @@ function renderTasks(taskList = null) {
         // taskElement.appendChild(editTask);
         taskElement.append(deleteBtn);
         
-        fragment.appendChild(filterBtn);
         fragment.appendChild(taskElement);
 
     });
 
     container.appendChild(fragment);
+
+    let filterBtn = document.createElement('button');
+    filterBtn.textContent = 'filter by status';
+
+    filterBtn.addEventListener('click', () => {
+        filterByStatus();
+    });
+
+    let sortBtn = document.createElement('button');
+    sortBtn.textContent = 'sort by date';
+    sortBtn.addEventListener('click', () => {
+        sortByDate();
+    });
 
     const clearButton = document.createElement('button');
     clearButton.textContent = 'Clear list of tasks';
@@ -190,7 +213,9 @@ function renderTasks(taskList = null) {
     clearButton.addEventListener('click', () => {
         clearTaskContainer();
     });
-    
+
+    container.appendChild(filterBtn);
+    container.appendChild(sortBtn);
     container.appendChild(clearButton);
 }
 
@@ -221,7 +246,7 @@ function markTaskAsDone(taskId){
         renderTasks();
         console.log(`Task "${task.taskName}" marked as ${task.isDone ? 'done' : 'not done'}`);
     };
-
+    
     saveToStorage();
     renderTasks();
 }
@@ -235,7 +260,7 @@ function favTask(taskId) {
         renderTasks();
         console.log(`Task "${task.taskName}" marked as ${task.isFav ? 'fav' : 'not fav'}`);
     };
-    
+
     saveToStorage();
     renderTasks();
 }
@@ -243,4 +268,14 @@ function favTask(taskId) {
 function filterByStatus() {
     let doneList = listOfTasks.filter(t => t.isDone == true);
     renderTasks(doneList);
+}
+
+function filterByFavoritness() {
+    let favList = listOfTasks.filter(t => t.isFav == true);
+    renderTasks(favList);
+}
+
+function sortByDate() {
+    let sortedList = listOfTasks.slice().sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    renderTasks(sortedList);
 }
