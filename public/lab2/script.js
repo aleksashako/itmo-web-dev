@@ -15,7 +15,27 @@ function loadPage() {
     const main = document.createElement('main');
     main.className = 'content';
 
+    createTaskForm(main);
+
+    createControlPanel(main);
+
+    const container = document.createElement('div');
+    container.id = 'containerForTasks';
+    container.className = 'container-for-tasks';
+
+    main.appendChild(container);
+          
+    app.appendChild(header);
+    app.appendChild(main);
+
+    loadFromStorage();
+    renderTasks();
+}
+
+function createTaskForm() {
     const taskCreation = document.createElement('form');
+    taskCreation.className = 'task-creation-form';
+
     let taskInput = document.createElement('input');
     taskInput.type = 'text';
     taskInput.placeholder = 'put the task name';
@@ -23,17 +43,17 @@ function loadPage() {
     taskInput.required = true;
     taskCreation.appendChild(taskInput);
 
-    const taskDate = document.createElement('input');
+    let taskDate = document.createElement('input');
     taskDate.type = 'date';
     taskDate.placeholder = 'add the deadline';
     taskDate.onfocus = "(this.type='date')";
     taskDate.required = true; //надо ли обязательной делать?
     taskCreation.appendChild(taskDate);
 
-    const taskType = document.createElement('select');
-    taskType.name = 'type-of-task';
+    let taskType = document.createElement('select');
+    taskType.className = 'type-of-task-selector';
 
-    const taskOptions = [
+    let taskOptions = [
         { value: '0', text: '', className: 'empty' },
         { value: '1', text: 'study', className: 'study-task' }, //хочу потом добавить цвета разных задач
         { value: '2', text: 'life' },
@@ -43,7 +63,7 @@ function loadPage() {
     ];
 
     taskOptions.forEach(option => {
-        const optionElement = document.createElement('option');
+        let optionElement = document.createElement('option');
         optionElement.value = option.value;
         optionElement.textContent = option.text;
         optionElement.dataset.className = option.className;
@@ -83,21 +103,53 @@ function loadPage() {
         renderTasks();
         taskCreation.reset(); //именно поэтому сделана form, а не label
     });
+
     taskCreation.appendChild(taskCreationButton);
             
     main.appendChild(taskCreation);
-          
-    app.appendChild(header);
-    app.appendChild(main);
+}
 
-    const container = document.createElement('div');
-    container.id = 'containerForTasks';
-    container.className = 'container-for-tasks';
-    app.appendChild(container);
+function createControlPanel() {
+    const controlPanel = document.createElement('div');
+    controlPanel.className = 'control-panel';
 
-    renderTasks();
+    let filterBtn = document.createElement('button');
+    filterBtn.textContent = 'filter by status';
+    filterBtn.className = 'control-btn';
+    filterBtn.addEventListener('click', () => {
+        filterByStatus();
+    });
+
+    let sortBtn = document.createElement('button');
+    sortBtn.textContent = 'sort by date';
+    sortBtn.className = 'control-btn';
+    sortBtn.addEventListener('click', () => {
+        sortByDate();
+    });
+
+    let clearButton = document.createElement('button');
+    clearButton.textContent = 'Clear list of tasks';
+    clearButton.className = 'clear-container-btn';
+    clearButton.addEventListener('click', () => {
+        clearTaskContainer();
+    });
+
+    let showAllBtn = document.createElement('button');
+    showAllBtn.textContent = 'Show all tasks';
+    showAllBtn.className = 'control-btn';
+    showAllBtn.addEventListener('click', () => {
+        renderTasks(); 
+    });
+
+    controlPanel.appendChild(filterBtn);
+    controlPanel.appendChild(sortBtn);
+    controlPanel.appendChild(showAllBtn);
+    controlPanel.appendChild(clearButton);
+
+    main.appendChild(controlPanel);
 
 }
+
 
 function addFavicon() {
     const link = document.createElement('link');
@@ -126,12 +178,14 @@ function loadFromStorage() {
     }
 }
 
+
+
 function renderTasks(taskList = null) {
-    loadFromStorage();
-
     const container = document.getElementById('containerForTasks');
-    container.replaceChildren();
 
+    const taskElements = container.querySelectorAll('.task-item');
+    taskElements.forEach(element => element.remove());
+    
     const fragment = document.createDocumentFragment();
     fragment.replaceChildren();
 
@@ -193,30 +247,6 @@ function renderTasks(taskList = null) {
     });
 
     container.appendChild(fragment);
-
-    let filterBtn = document.createElement('button');
-    filterBtn.textContent = 'filter by status';
-
-    filterBtn.addEventListener('click', () => {
-        filterByStatus();
-    });
-
-    let sortBtn = document.createElement('button');
-    sortBtn.textContent = 'sort by date';
-    sortBtn.addEventListener('click', () => {
-        sortByDate();
-    });
-
-    const clearButton = document.createElement('button');
-    clearButton.textContent = 'Clear list of tasks';
-    clearButton.className = 'clear-container-btn';
-    clearButton.addEventListener('click', () => {
-        clearTaskContainer();
-    });
-
-    container.appendChild(filterBtn);
-    container.appendChild(sortBtn);
-    container.appendChild(clearButton);
 }
 
 function clearTaskContainer() {
@@ -246,7 +276,6 @@ function markTaskAsDone(taskId){
         renderTasks();
         console.log(`Task "${task.taskName}" marked as ${task.isDone ? 'done' : 'not done'}`);
     };
-    
     saveToStorage();
     renderTasks();
 }
@@ -260,7 +289,6 @@ function favTask(taskId) {
         renderTasks();
         console.log(`Task "${task.taskName}" marked as ${task.isFav ? 'fav' : 'not fav'}`);
     };
-
     saveToStorage();
     renderTasks();
 }
