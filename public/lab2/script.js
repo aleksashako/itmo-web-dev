@@ -329,6 +329,7 @@ function clearTaskContainer() {
 
     listOfTasks = [];
     saveToStorage();
+    renderTasks();
 }
 
 function deleteTask(taskId) {
