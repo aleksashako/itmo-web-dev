@@ -7,18 +7,26 @@
 main {
     width: 600px;
     margin: 20px auto;
-    background-color: #c8e3f5;
+    background-color: #ffffff;
     padding: 20px 20px 20px 20px;
     border: 2px solid rgb(34, 45, 96);
     border-radius: 10px;
 }
 
+.task-creation-form {
+    width: 500px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    padding: 20px 20px 20px 20px;
+    border: 2px solid rgb(60, 104, 137);
+    border-radius: 10px;
+}
+
 .container-for-tasks {
-    width: 600px;
+    width: 500px;
     margin: 20px auto;
     background-color: #ffffff;
     padding: 20px 20px 20px 20px;
     border: 2px solid rgb(171, 60, 115);
     border-radius: 10px;
-
 }
