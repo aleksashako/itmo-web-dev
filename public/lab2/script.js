@@ -32,7 +32,7 @@ function loadPage() {
     renderTasks();
 }
 
-function createTaskForm() {
+function createTaskForm(main) {
     const taskCreation = document.createElement('form');
     taskCreation.className = 'task-creation-form';
 
@@ -109,7 +109,7 @@ function createTaskForm() {
     main.appendChild(taskCreation);
 }
 
-function createControlPanel() {
+function createControlPanel(main) {
     const controlPanel = document.createElement('div');
     controlPanel.className = 'control-panel';
 
@@ -177,8 +177,6 @@ function loadFromStorage() {
         listOfTasks = JSON.parse(curTasks);
     }
 }
-
-
 
 function renderTasks(taskList = null) {
     const container = document.getElementById('containerForTasks');
