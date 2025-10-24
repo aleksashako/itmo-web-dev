@@ -22,14 +22,19 @@ function loadPage() {
     const container = document.createElement('div');
     container.id = 'containerForTasks';
     container.className = 'container-for-tasks';
-
     main.appendChild(container);
+
+    const statsContainer = document.createElement('div');
+    statsContainer.id = 'statsContainer';
+    statsContainer.className = 'stats-container';
+    main.appendChild(statsContainer);
           
     app.appendChild(header);
     app.appendChild(main);
 
     loadFromStorage();
     renderTasks();
+    updateStatistics();
 }
 
 function createTaskForm(main) {
@@ -113,12 +118,39 @@ function createControlPanel(main) {
     const controlPanel = document.createElement('div');
     controlPanel.className = 'control-panel';
 
-    let filterBtn = document.createElement('button');
-    filterBtn.textContent = 'filter by status';
-    filterBtn.className = 'control-btn';
-    filterBtn.addEventListener('click', () => {
-        filterByStatus();
+    const statusFilter = document.createElement('select');
+    statusFilter.className = 'status-filter';
+    
+    const statusOptions = [
+        { value: 'all', text: 'All tasks' },
+        { value: 'done', text: 'Done only' },
+        { value: 'not-done', text: 'Not done only' }
+    ];
+    
+    statusOptions.forEach(option => {
+        let optionElement = document.createElement('option');
+        optionElement.value = option.value;
+        optionElement.textContent = option.text;
+        statusFilter.appendChild(optionElement);
     });
+    
+    statusFilter.addEventListener('change', () => {
+        filterByStatus(statusFilter.value);
+    });
+
+    // let filterBtn = document.createElement('button');
+    // filterBtn.textContent = 'filter by status';
+    // filterBtn.className = 'control-btn';
+    // filterBtn.addEventListener('click', () => {
+    //     filterByStatus();
+    // });
+
+    let filterBtnF = document.createElement('button');
+    filterBtnF.textContent = 'show favourite';
+    filterBtnF.className = 'control-btn';
+    filterBtnF.addEventListener('click', () => {
+        filterByFavoritness();
+    })
 
     let sortBtn = document.createElement('button');
     sortBtn.textContent = 'sort by date';
@@ -128,28 +160,72 @@ function createControlPanel(main) {
     });
 
     let clearButton = document.createElement('button');
-    clearButton.textContent = 'Clear list of tasks';
+    clearButton.textContent = 'clear list of tasks';
     clearButton.className = 'clear-container-btn';
     clearButton.addEventListener('click', () => {
         clearTaskContainer();
     });
 
     let showAllBtn = document.createElement('button');
-    showAllBtn.textContent = 'Show all tasks';
+    showAllBtn.textContent = 'show all tasks';
     showAllBtn.className = 'control-btn';
     showAllBtn.addEventListener('click', () => {
         renderTasks(); 
     });
 
-    controlPanel.appendChild(filterBtn);
-    controlPanel.appendChild(sortBtn);
+    let subString = document.createElement('input');
+    subString.type = 'text';
+    subString.placeholder = 'search for...';
+    subString.className = 'search-input';
+    subString.required = true;
+    
+    let searchingBtn  = document.createElement('button');
+    searchingBtn.textContent = '🔍';
+    searchingBtn.className = 'search-btn';
+    searchingBtn.addEventListener('click', () => {
+        console.log(subString.value)
+        if (!subString.value) {
+            alert('you cannot search an empty line. please, write done something');
+            subString.focus();
+            return;
+        }
+        filterBySearch(subString.value);
+    })
+
     controlPanel.appendChild(showAllBtn);
+    controlPanel.appendChild(subString);
+    controlPanel.appendChild(searchingBtn);
+    controlPanel.appendChild(statusFilter);
+    controlPanel.appendChild(filterBtnF);
+    controlPanel.appendChild(sortBtn);
     controlPanel.appendChild(clearButton);
 
     main.appendChild(controlPanel);
 
 }
 
+function updateStatistics() {
+    const statsContainer = document.getElementById('statsContainer');
+    statsContainer.replaceChildren();
+
+    let statisticsLine = document.createElement('div');
+    statisticsLine.className = 'statistics-line';
+
+    let stat1 = document.createElement('span'); 
+    stat1.textContent = `total: ${listOfTasks.length}`;
+
+    let stat2 = document.createElement('span');
+    stat2.textContent = `done: ${listOfTasks.filter(t => t.isDone).length}`; 
+
+    let stat3 = document.createElement('span');
+    stat3.textContent = `to be done: ${listOfTasks.filter(t => !t.isDone).length}`;
+
+    statisticsLine.appendChild(stat1);
+    statisticsLine.appendChild(stat2);
+    statisticsLine.appendChild(stat3);
+
+    statsContainer.appendChild(statisticsLine);
+}
 
 function addFavicon() {
     const link = document.createElement('link');
@@ -187,9 +263,9 @@ function renderTasks(taskList = null) {
     const fragment = document.createDocumentFragment();
     fragment.replaceChildren();
 
-    const taskToRender = taskList || listOfTasks; // для выполнения фильтров и сортировки
+    const tasksToRender = taskList || listOfTasks; // для выполнения фильтров и сортировки
   
-    taskToRender.forEach(t => {
+    tasksToRender.forEach(t => {
         const taskElement = document.createElement('div');
         taskElement.className = 'task-item';
         taskElement.draggable = 'true';
@@ -238,13 +314,13 @@ function renderTasks(taskList = null) {
         taskElement.appendChild(infoDiv);
         taskElement.appendChild(favBtn);
         // taskElement.appendChild(editTask);
-        taskElement.append(deleteBtn);
+        taskElement.appendChild(deleteBtn);
         
         fragment.appendChild(taskElement);
 
     });
-
     container.appendChild(fragment);
+    updateStatistics();
 }
 
 function clearTaskContainer() {
@@ -291,9 +367,29 @@ function favTask(taskId) {
     renderTasks();
 }
 
-function filterByStatus() {
-    let doneList = listOfTasks.filter(t => t.isDone == true);
-    renderTasks(doneList);
+// function filterByStatus() {
+//     let doneList = listOfTasks.filter(t => t.isDone == true);
+//     renderTasks(doneList);
+// }
+
+function filterByStatus(status) {
+    let filteredList;
+    
+    switch(status) {
+        case 'done':
+            filteredList = listOfTasks.filter(t => t.isDone === true);
+            break;
+        case 'not-done':
+            filteredList = listOfTasks.filter(t => t.isDone === false);
+            break;
+        case 'all':
+        default:
+            filteredList = listOfTasks;
+            break;
+    }
+    
+    renderTasks(filteredList);
+    console.log(`Showing: ${status}`);
 }
 
 function filterByFavoritness() {
@@ -304,4 +400,9 @@ function filterByFavoritness() {
 function sortByDate() {
     let sortedList = listOfTasks.slice().sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
     renderTasks(sortedList);
+}
+
+function filterBySearch(str) {
+    let commonTasks = listOfTasks.filter(t => t.taskName.toLowerCase().includes(str.toLowerCase()));
+    renderTasks(commonTasks);
 }
