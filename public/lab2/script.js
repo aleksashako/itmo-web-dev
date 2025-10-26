@@ -19,10 +19,12 @@ function loadPage() {
 
     createControlPanel(main);
 
-    const container = document.createElement('div');
+    const container = document.createElement('ul');
     container.id = 'containerForTasks';
     container.className = 'container-for-tasks';
     main.appendChild(container);
+
+    DragDrop(container);
 
     const clearBtnContainer = document.createElement('div');
     clearBtnContainer.id = 'clearBtnContainer';
@@ -261,7 +263,7 @@ function renderTasks(taskList = null) {
     const tasksToRender = taskList || listOfTasks; // для выполнения фильтров и сортировки
   
     tasksToRender.forEach(t => {
-        const taskElement = document.createElement('div');
+        const taskElement = document.createElement('li');
         taskElement.className = 'task-item';
         taskElement.draggable = 'true';
         taskElement.dataset.taskId = t.id;
@@ -326,8 +328,73 @@ function renderTasks(taskList = null) {
 
     });
     container.appendChild(fragment);
+
     updateStatistics();
 }
+
+function DragDrop(container) {
+    let draggedItem = null;
+
+    container.addEventListener('dragstart', (evt) => {
+        if (evt.target.classList.contains('task-item')) {
+            draggedItem = evt.target;
+            evt.target.classList.add('selected');
+            evt.dataTransfer.effectAllowed = 'move';
+        }
+    });
+
+    container.addEventListener('dragend', (evt) => {
+        if (evt.target.classList.contains('task-item')) {
+            evt.target.classList.remove('selected');
+            updateTaskOrder(container);
+            draggedItem = null;
+        }
+    });
+
+    container.addEventListener('dragover', (evt) => {
+        evt.preventDefault();
+        
+        const currentElement = evt.target;
+        
+        const taskItem = currentElement.closest('.task-item');
+        
+        if (!taskItem || taskItem === draggedItem) return;
+        
+        const nextElement = getNextElement(evt.clientY, taskItem);
+        
+        if (nextElement && draggedItem === nextElement.previousElementSibling) {
+            return;
+        }
+        
+        container.insertBefore(draggedItem, nextElement);
+    });
+
+        const getNextElement = (cursorPosition, currentElement) => {
+        const currentElementCoord = currentElement.getBoundingClientRect();
+        const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
+        
+        return (cursorPosition < currentElementCenter) ? currentElement : currentElement.nextElementSibling;
+    };
+}
+
+ function updateTaskOrder(container) {
+    const taskElements = container.querySelectorAll('.task-item');
+    const newOrder = Array.from(taskElements).map(element => {
+        const taskId = parseInt(element.dataset.taskId);
+        return listOfTasks.find(task => task.id === taskId);
+    }).filter(task => task !== undefined);
+        
+    listOfTasks = newOrder;
+        
+    listOfTasks.forEach((task, index) => {
+        task.id = index;
+    });
+        
+    saveToStorage();
+    console.log('Task order updated after drag and drop');
+    console.log(listOfTasks);
+}
+
 
 function createClearBtn() {
     const clearBtnContainer = document.getElementById('clearBtnContainer');
@@ -394,8 +461,6 @@ function markTaskAsDone(taskId){
         renderTasks();
         console.log(`Task "${task.taskName}" marked as ${task.isDone ? 'done' : 'not done'}`);
     };
-    saveToStorage();
-    renderTasks();
 }
 
 function favTask(taskId) {
@@ -407,8 +472,6 @@ function favTask(taskId) {
         renderTasks();
         console.log(`Task "${task.taskName}" marked as ${task.isFav ? 'fav' : 'not fav'}`);
     };
-    saveToStorage();
-    renderTasks();
 }
 
 function editTask(taskId) {
