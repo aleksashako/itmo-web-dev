@@ -89,7 +89,7 @@ function createTaskForm(main) {
             taskCreationButton.click();
         }
     });
-    
+
     taskCreation.appendChild(taskInput);
 
     let taskDate = document.createElement('input');
@@ -342,32 +342,32 @@ function renderTasks(taskList = null) {
 function DragDrop(container) {
     let draggedItem = null;
 
-    container.addEventListener('dragstart', (evt) => {
-        if (evt.target.classList.contains('task-item')) {
-            draggedItem = evt.target;
-            evt.target.classList.add('selected');
-            evt.dataTransfer.effectAllowed = 'move';
+    container.addEventListener('dragstart', (ev) => {
+        if (ev.target.classList.contains('task-item')) {
+            draggedItem = ev.target;
+            ev.target.classList.add('selected');
+            ev.dataTransfer.effectAllowed = 'move';
         }
     });
 
-    container.addEventListener('dragend', (evt) => {
-        if (evt.target.classList.contains('task-item')) {
-            evt.target.classList.remove('selected');
+    container.addEventListener('dragend', (ev) => {
+        if (ev.target.classList.contains('task-item')) {
+            ev.target.classList.remove('selected');
             updateTaskOrder(container);
             draggedItem = null;
         }
     });
 
-    container.addEventListener('dragover', (evt) => {
-        evt.preventDefault();
+    container.addEventListener('dragover', (ev) => {
+        ev.preventDefault();
         
-        const currentElement = evt.target;
+        const currentElement = ev.target;
         
         const taskItem = currentElement.closest('.task-item');
         
         if (!taskItem || taskItem === draggedItem) return;
         
-        const nextElement = getNextElement(evt.clientY, taskItem);
+        const nextElement = getNextElement(ev.clientY, taskItem);
         
         if (nextElement && draggedItem === nextElement.previousElementSibling) {
             return;
@@ -384,19 +384,19 @@ function DragDrop(container) {
     };
 }
 
- function updateTaskOrder(container) {
+function updateTaskOrder(container) {
     const taskElements = container.querySelectorAll('.task-item');
-    const newOrder = Array.from(taskElements).map(element => {
-        const taskId = parseInt(element.dataset.taskId);
-        return listOfTasks.find(task => task.id === taskId);
-    }).filter(task => task !== undefined);
-        
+    
+    const newOrderIds = Array.from(taskElements).map(element => 
+        parseInt(element.dataset.taskId)
+    );
+    
+    const newOrder = newOrderIds.map(taskId => 
+        listOfTasks.find(task => task.id === taskId)
+    ).filter(task => task !== undefined);
+    
     listOfTasks = newOrder;
-        
-    listOfTasks.forEach((task, index) => {
-        task.id = index;
-    });
-        
+    
     saveToStorage();
     console.log('Task order updated after drag and drop');
     console.log(listOfTasks);
