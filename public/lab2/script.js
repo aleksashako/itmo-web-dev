@@ -86,7 +86,7 @@ function createTaskForm(main) {
     taskDate.type = 'date';
     taskDate.placeholder = 'add the deadline';
     taskDate.onfocus = "(this.type='date')";
-    taskDate.required = true; //надо ли обязательной делать?
+    // taskDate.required = true; //надо ли обязательной делать?
     taskCreation.appendChild(taskDate);
 
     let taskType = document.createElement('select');
@@ -114,7 +114,7 @@ function createTaskForm(main) {
     const taskCreationButton = document.createElement('button');
     taskCreationButton.type = 'button';
     taskCreationButton.className = 'task-creation-button';
-    taskCreationButton.textContent = '✔️';
+    taskCreationButton.textContent = '✔';
 
     taskCreationButton.addEventListener("click", () => {
         if (!taskInput.value.trim()) {
@@ -141,6 +141,8 @@ function createTaskForm(main) {
             
     main.appendChild(taskCreation);
 }
+
+let sortDirection = 'asc';
 
 function createControlPanel(main) {
     const controlPanel = document.createElement('div');
@@ -197,9 +199,11 @@ function createControlPanel(main) {
     })
 
     let sortBtn = document.createElement('button');
-    sortBtn.textContent = 'sort by date';
+    sortBtn.textContent = 'sort by date ↑';
     sortBtn.className = 'control-btn';
     sortBtn.addEventListener('click', () => {
+        toggleSortDirection();
+        sortBtn.textContent = `sort by date ${sortDirection === 'asc' ? '↑' : '↓'}`;
         sortByDate();
     });
 
@@ -229,6 +233,10 @@ function createControlPanel(main) {
         filterBySearch(subString.value);
     })
 
+    function toggleSortDirection() {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    }
+
     controlPanel.appendChild(showAllBtn);
     controlPanel.appendChild(subString);
     controlPanel.appendChild(searchingBtn);
@@ -256,9 +264,11 @@ function renderTasks(taskList = null) {
         const taskElement = document.createElement('div');
         taskElement.className = 'task-item';
         taskElement.draggable = 'true';
+        taskElement.dataset.taskId = t.id;
         
         const title = document.createElement('h3');
         title.textContent = t.taskName;
+        title.contentEditable = false;
         
         const infoDiv = document.createElement('div');
         infoDiv.className = 'task-info';
@@ -292,6 +302,14 @@ function renderTasks(taskList = null) {
         favBtn.addEventListener('click', () => {
             favTask(t.id);
         });
+
+        let editBtn = document.createElement('button');
+        editBtn.textContent = '✎';
+        editBtn.className = 'edit-task-btn';
+
+        editBtn.addEventListener('click', () => {
+            editTask(t.id);
+        });
         
         infoDiv.appendChild(deadline);
         infoDiv.appendChild(type);
@@ -299,9 +317,10 @@ function renderTasks(taskList = null) {
         taskElement.appendChild(doneBtn);
         taskElement.appendChild(title);
         taskElement.appendChild(infoDiv);
+        taskElement.appendChild(editBtn);
         taskElement.appendChild(favBtn);
         // taskElement.appendChild(editTask);
-        taskElement.appendChild(deleteBtn);
+        taskElement.appendChild(deleteBtn);   
         
         fragment.appendChild(taskElement);
 
@@ -392,6 +411,73 @@ function favTask(taskId) {
     renderTasks();
 }
 
+function editTask(taskId) {
+    let task = listOfTasks.find(t => t.id == taskId);
+
+    let taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+
+    let title = taskElement.querySelector('h3');
+    let deadlineSpan = taskElement.querySelector('.task-info span:first-child');
+    
+    const originalName = task.taskName;
+    const originalDate = task.deadline;
+
+    title.contentEditable = true;
+    title.focus();
+
+    let newDateInput = document.createElement('input');
+    newDateInput.type = 'date';
+    newDateInput.value = task.deadline;
+    newDateInput.className = 'edit-date-input';
+    deadlineSpan.replaceWith(newDateInput);  
+
+    let buttons = taskElement.querySelectorAll('button');
+    buttons.forEach(btn => btn.style.display = 'none');
+
+    let saveBtn = document.createElement('button');
+    saveBtn.textContent = 'apply changes';
+    saveBtn.className = 'save-edit-btn';
+    saveBtn.addEventListener('click', () => {
+        saveEdit(taskId, title.textContent, newDateInput.value);
+    });
+
+    let cancelBtn = document.createElement('button');
+    cancelBtn.textContent = 'revert to original';
+    cancelBtn.className = 'cancel-edit-btn';
+    cancelBtn.addEventListener('click', () => {
+        cancelEdit(taskId, originalName, originalDate);
+    });
+
+    taskElement.appendChild(saveBtn);
+    taskElement.appendChild(cancelBtn);
+}
+
+function saveEdit(taskId, newName, newDate) {
+    let task = listOfTasks.find(t => t.id == taskId);
+    if (task) {
+        if (!newName.trim()) {
+            alert('Task name cannot be empty');
+            return;
+        }
+
+        task.taskName = newName.trim();
+        task.deadline = newDate;
+        
+        saveToStorage();
+        renderTasks(); 
+    }
+}
+
+function cancelEdit(taskId, originalName, originalDate) {
+    let task = listOfTasks.find(t => t.id == taskId);
+    if (task) {
+        task.taskName = originalName;
+        task.deadline = originalDate;
+        
+        renderTasks(); 
+    }
+}
+
 function filterByStatus(status) {
     let filteredList;
     
@@ -443,8 +529,19 @@ function filterByFavoritness() {
 }
 
 function sortByDate() {
-    let sortedList = listOfTasks.slice().sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
+    let sortedList = listOfTasks.slice().sort((a, b) => {
+        const dateA = new Date(a.deadline);
+        const dateB = new Date(b.deadline);
+        
+        if (sortDirection === 'asc') {
+            return dateA - dateB;
+        } else {
+            return dateB - dateA; 
+        }
+    });
+    
     renderTasks(sortedList);
+    console.log(`Sorted by date: ${sortDirection === 'asc' ? 'oldest first' : 'newest first'}`);
 }
 
 function filterBySearch(str) {
