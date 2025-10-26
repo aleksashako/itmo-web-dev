@@ -82,13 +82,20 @@ function createTaskForm(main) {
     taskInput.placeholder = 'put the task name';
     taskInput.className = 'task-input';
     taskInput.required = true;
+
+    taskInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            taskCreationButton.click();
+        }
+    });
+    
     taskCreation.appendChild(taskInput);
 
     let taskDate = document.createElement('input');
     taskDate.type = 'date';
     taskDate.placeholder = 'add the deadline';
     taskDate.onfocus = "(this.type='date')";
-    // taskDate.required = true; //надо ли обязательной делать?
     taskCreation.appendChild(taskDate);
 
     let taskType = document.createElement('select');
