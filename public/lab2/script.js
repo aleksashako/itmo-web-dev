@@ -228,6 +228,13 @@ function createControlPanel(main) {
     subString.placeholder = 'search for...';
     subString.className = 'search-input';
     subString.required = true;
+
+    subString.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            taskCreationButton.click();
+        }
+    });
     
     let searchingBtn  = document.createElement('button');
     searchingBtn.type = 'submit';
