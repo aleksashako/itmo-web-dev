@@ -232,7 +232,7 @@ function createControlPanel(main) {
     subString.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            taskCreationButton.click();
+            filterBySearch(subString.value).click();
         }
     });
     
