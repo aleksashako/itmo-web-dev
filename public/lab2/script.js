@@ -328,7 +328,6 @@ function renderTasks(taskList = null) {
         taskElement.appendChild(infoDiv);
         taskElement.appendChild(editBtn);
         taskElement.appendChild(favBtn);
-        // taskElement.appendChild(editTask);
         taskElement.appendChild(deleteBtn);   
         
         fragment.appendChild(taskElement);
@@ -495,6 +494,13 @@ function editTask(taskId) {
     title.contentEditable = true;
     title.focus();
 
+    title.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveEdit(taskId, title.textContent, newDateInput.value).click();
+        }
+    });
+
     let newDateInput = document.createElement('input');
     newDateInput.type = 'date';
     newDateInput.value = task.deadline;
@@ -600,18 +606,29 @@ function filterByFavoritness() {
 
 function sortByDate() {
     let sortedList = listOfTasks.slice().sort((a, b) => {
-        const dateA = new Date(a.deadline);
-        const dateB = new Date(b.deadline);
+        const hasDeadlineA = a.deadline && a.deadline !== '';
+        const hasDeadlineB = b.deadline && b.deadline !== '';
         
-        if (sortDirection === 'asc') {
-            return dateA - dateB;
-        } else {
-            return dateB - dateA; 
+        if (hasDeadlineA !== hasDeadlineB) {
+            return hasDeadlineB - hasDeadlineA; 
         }
+        
+        if (hasDeadlineA && hasDeadlineB) {
+            const dateA = new Date(a.deadline);
+            const dateB = new Date(b.deadline);
+            
+            if (sortDirection === 'asc') {
+                return dateA - dateB;
+            } else {
+                return dateB - dateA;
+            }
+        }
+        
+        return 0;
     });
     
     renderTasks(sortedList);
-    console.log(`Sorted by date: ${sortDirection === 'asc' ? 'oldest first' : 'newest first'}`);
+    console.log(`Sorted by date: ${sortDirection === 'asc' ? 'nearest first' : 'furthest first'}, tasks with deadlines first`);
 }
 
 function filterBySearch(str) {
