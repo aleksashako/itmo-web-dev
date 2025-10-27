@@ -102,8 +102,8 @@ function createTaskForm(main) {
     taskType.className = 'type-of-task-selector';
 
     let taskOptions = [
-        { value: '0', text: '', className: 'empty' },
-        { value: '1', text: 'study', className: 'study-task' }, //хочу потом добавить цвета разных задач
+        { value: '0', text: '' },
+        { value: '1', text: 'study'}, 
         { value: '2', text: 'life' },
         { value: '3', text: 'work' },
         { value: '4', text: 'family&friends' },
@@ -230,7 +230,8 @@ function createControlPanel(main) {
     subString.required = true;
     
     let searchingBtn  = document.createElement('button');
-    searchingBtn.textContent = '🔍';
+    searchingBtn.type = 'submit';
+    searchingBtn.textContent = '⌕';
     searchingBtn.className = 'search-btn';
     searchingBtn.addEventListener('click', () => {
         console.log(subString.value)
@@ -267,28 +268,31 @@ function renderTasks(taskList = null) {
     const fragment = document.createDocumentFragment();
     fragment.replaceChildren();
 
-    const tasksToRender = taskList || listOfTasks; // для выполнения фильтров и сортировки
+    const tasksToRender = taskList || listOfTasks;
   
     tasksToRender.forEach(t => {
         const taskElement = document.createElement('li');
         taskElement.className = 'task-item';
         taskElement.draggable = 'true';
         taskElement.dataset.taskId = t.id;
+
+        if (t.isDone) {
+            taskElement.classList.add('completed');
+        } // чтобы стили выполненного применить потом
+        
+        const typeClass = getTaskTypeClass(t.type);
+        if (typeClass) {
+            taskElement.classList.add(typeClass);
+        }
         
         const title = document.createElement('h3');
         title.textContent = t.taskName;
         title.contentEditable = false;
         
-        const infoDiv = document.createElement('div');
-        infoDiv.className = 'task-info';
+        const deadline = document.createElement('div');
+        deadline.className = 'task-deadline';
+        deadline.textContent = t.deadline ? `deadline: ${t.deadline}` : 'no deadline';
         
-        const deadline = document.createElement('span');
-        deadline.textContent = `deadline: ${t.deadline}`;
-        
-        const type = document.createElement('span');
-        type.textContent = `type: ${t.type}`;
-        type.className = 'task-type';
-
         let deleteBtn = document.createElement('button');
         deleteBtn.textContent = '✖';
         deleteBtn.className = 'delete-task-btn';
@@ -305,7 +309,7 @@ function renderTasks(taskList = null) {
         });
 
         let favBtn = document.createElement('button');
-        favBtn.textContent = t.isFav ?'★' : '☆'; //тернарный оператор дял красоты
+        favBtn.textContent = t.isFav ?'★' : '☆';
         favBtn.className = `favor-task-btn ${t.isFav ? 'fav' : ''}`;
 
         favBtn.addEventListener('click', () => {
@@ -320,22 +324,34 @@ function renderTasks(taskList = null) {
             editTask(t.id);
         });
         
-        infoDiv.appendChild(deadline);
-        infoDiv.appendChild(type);
+        const contentWrapper = document.createElement('div');
+        contentWrapper.className = 'task-content';
+        contentWrapper.appendChild(title);
+        contentWrapper.appendChild(deadline);
 
         taskElement.appendChild(doneBtn);
-        taskElement.appendChild(title);
-        taskElement.appendChild(infoDiv);
+        taskElement.appendChild(contentWrapper);
         taskElement.appendChild(editBtn);
         taskElement.appendChild(favBtn);
         taskElement.appendChild(deleteBtn);   
         
         fragment.appendChild(taskElement);
-
     });
     container.appendChild(fragment);
 
     updateStatistics();
+}
+
+function getTaskTypeClass(typeValue) {
+    const typeMap = {
+        '0': 'empty',
+        '1': 'study-task',
+        '2': 'life',
+        '3': 'work',
+        '4': 'family-friends', 
+        '5': 'other'
+    };
+    return typeMap[typeValue] || 'empty';
 }
 
 function DragDrop(container) {
@@ -486,7 +502,7 @@ function editTask(taskId) {
     let taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
 
     let title = taskElement.querySelector('h3');
-    let deadlineSpan = taskElement.querySelector('.task-info span:first-child');
+    let deadlineSpan = taskElement.querySelector('.task-deadline');
     
     const originalName = task.taskName;
     const originalDate = task.deadline;
