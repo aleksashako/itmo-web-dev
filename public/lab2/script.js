@@ -424,7 +424,6 @@ function updateTaskOrder(container) {
     console.log(listOfTasks);
 }
 
-
 function createClearBtn() {
     const clearBtnContainer = document.getElementById('clearBtnContainer');
     clearBtnContainer.replaceChildren();
@@ -658,3 +657,5 @@ function filterBySearch(str) {
     let commonTasks = listOfTasks.filter(t => t.taskName.toLowerCase().includes(str.toLowerCase()));
     renderTasks(commonTasks);
 }
+
+// changes for PR
