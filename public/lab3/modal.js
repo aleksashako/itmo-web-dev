@@ -1,8 +1,8 @@
-// FINISH MODAL PART
-function createFinishModal() {
+// GAME OVER MODAL PART
+function createGameOverModal() {
     let modal = document.createElement('div');
-    modal.id = 'finishModal';
-    modal.className = 'finish-modal';
+    modal.id = 'gameOverModal';
+    modal.className = 'game-over-modal';
     
     let modalContent = document.createElement('div');
     modalContent.className = 'modal-content';
@@ -11,15 +11,31 @@ function createFinishModal() {
     modalHeader.className = 'modal-header';
     
     let modalTitle = document.createElement('h3');
+    modalTitle.id = 'game-over-modal-title';
     modalTitle.textContent = 'Game is over...';
     modalHeader.appendChild(modalTitle);
+
+    let modalTitleSaved = document.createElement('h3');
+    modalTitleSaved.id = 'game-over-modal-title-saved';
+    modalTitleSaved.textContent = 'Result saved to leaderboard!';
+    modalTitleSaved.style.display = 'none';
+    modalHeader.appendChild(modalTitleSaved);
     
     let modalBody = document.createElement('div');
     modalBody.className = 'modal-body';
     
-    let scoreDisplay = document.createElement('div');
-    scoreDisplay.className = 'score-display';
-    scoreDisplay.textContent = `Your score: ${score}`;
+    let scoreContainer = document.createElement('div');
+    scoreContainer.id = 'scoreContainerModal';
+    scoreContainer.className = 'score-container';
+    
+    let scoreLabel = document.createElement('span');
+    scoreLabel.textContent = 'Your score: ';
+    
+    let currentScore = document.getElementById('curr-score').cloneNode(true);
+    currentScore.id = 'modal-curr-score';
+    
+    scoreContainer.appendChild(scoreLabel);
+    scoreContainer.appendChild(currentScore);
     
     let nameInput = document.createElement('input');
     nameInput.type = 'text';
@@ -34,21 +50,22 @@ function createFinishModal() {
     saveBtn.className = 'save-result-button';
     saveBtn.textContent = 'save to leaderboard';
     
-    const cancelBtn = document.createElement('button');
-    cancelBtn.id = 'cancelBtn';
-    cancelBtn.className = 'cancel-button';
-    cancelBtn.textContent = 'do not save';
-
     const restartBtn = document.createElement('button');
     restartBtn.id = 'restartBtn';
     restartBtn.className = 'restart-button';
     restartBtn.textContent = 'restart game without saving';
+
+    const restartAfterSaveBtn = document.createElement('button');
+    restartAfterSaveBtn.id = 'restartAfterSaveBtn';
+    restartAfterSaveBtn.className = 'restart-button';
+    restartAfterSaveBtn.textContent = 'restart game';
+    restartAfterSaveBtn.style.display = 'none';
     
     buttonsContainer.appendChild(saveBtn);
-    buttonsContainer.appendChild(cancelBtn);
     buttonsContainer.appendChild(restartBtn);
+    buttonsContainer.appendChild(restartAfterSaveBtn);
     
-    modalBody.appendChild(scoreDisplay);
+    modalBody.appendChild(scoreContainer);
     modalBody.appendChild(nameInput);
     modalBody.appendChild(buttonsContainer);
     
@@ -59,61 +76,77 @@ function createFinishModal() {
     document.body.appendChild(modal);
 
     // кнопка временная, для проверки модального окна
-    const openFinishModalBtn = document.createElement('button');
-    openFinishModalBtn.id = 'openFinishModalBtn';
-    openFinishModalBtn.textContent = 'open finish modal';
-    document.body.appendChild(openFinishModalBtn);
+    const openGameOverModalBtn = document.createElement('button');
+    openGameOverModalBtn.id = 'openGameOverModalBtn';
+    openGameOverModalBtn.textContent = 'open game over modal';
+    document.body.appendChild(openGameOverModalBtn);
     
     setupModalEventListeners();
 }
 
 function setupModalEventListeners() {
-    let modal = document.getElementById('finishModal');
-    let cancelBtn = document.getElementById('cancelBtn');
+    let modal = document.getElementById('gameOverModal');
     let saveBtn = document.getElementById('saveResultToLeaderBoardBtn');
     let restartBtn = document.getElementById('restartBtn');
-
-    cancelBtn.addEventListener('click', function() {
-        closeFinishModal();
-    });
-    
+    let restartAfterSaveBtn = document.getElementById('restartAfterSaveBtn');
+  
     saveBtn.addEventListener('click', function() {
         saveScoreToLeaderboard();
+        resetScore();
+        afterSaveActions();
+
     });
     
     restartBtn.addEventListener('click', function() {
         resetGame();
-        closeFinishModal();
+        closeGameOverModal();
     });
+
+    restartAfterSaveBtn.addEventListener('click', function() {
+        resetGame();
+        closeGameOverModal();
+
+    })
     
     window.addEventListener('click', function(event) {
         if (event.target === modal) {
-            closeFinishModal();
+            closeGameOverModal();
         }
     });
 
-    let openModal = document.getElementById('openFinishModalBtn');
+    let openModal = document.getElementById('openGameOverModalBtn');
     openModal.addEventListener('click',  function() {
-        openFinishModal();
+        openGameOverModal();
     })
 }
 
-function openFinishModal() {
-    updateScoreDisplay(); 
-    const modal = document.getElementById('finishModal');
+function openGameOverModal() {
+    const modal = document.getElementById('gameOverModal');
     modal.style.display = 'block';
 }
 
-function closeFinishModal() {
-    const modal = document.getElementById('finishModal');
+function closeGameOverModal() {
+    const modal = document.getElementById('gameOverModal');
     modal.style.display = 'none';
 }
 
-function updateScoreDisplay() {
-    const scoreElement = document.getElementById('currentScore');
-    if (scoreElement) {
-        scoreElement.textContent = score;
-    }
+function afterSaveActions() {
+    const modal = document.getElementById('gameOverModal');
+    let nameInput = document.getElementById('playerName');
+    let prevTitle = document.getElementById('game-over-modal-title');
+    let newTitle = document.getElementById('game-over-modal-title-saved');
+    let scoreContainerModal = document.getElementById('scoreContainerModal');
+    let saveBtn = document.getElementById('saveResultToLeaderBoardBtn');
+    let restartBtn = document.getElementById('restartBtn');
+    let newRestartBtn = document.getElementById('restartAfterSaveBtn');
+
+    nameInput.style.display = 'none';
+    prevTitle.style.display = 'none';
+    newTitle.style.display = 'block';
+    scoreContainerModal.style.display = 'none';
+    saveBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
+    newRestartBtn.style.display = 'block';
 }
 
 // LEADERBORAD PART
@@ -164,44 +197,36 @@ function createLeaderBoardModal() {
     leaderTable.appendChild(tbody);
     
     modalBody.appendChild(leaderTable);
+
+    const clearButton = document.createElement('button');
+    clearButton.id = 'clearLeaderboardBtn';
+    clearButton.className = 'clear-leaderboard-button';
+    clearButton.textContent = 'Clear Leaderboard';
+    clearButton.addEventListener('click', clearLeaderboard);
+    modalBody.appendChild(clearButton);
     
     modalContent.appendChild(modalHeader);
     modalContent.appendChild(modalBody);
     modal.appendChild(modalContent);
     
     document.body.appendChild(modal);
-    
-    setupLeaderboardEventListeners();
 }
 
-function setupLeaderboardEventListeners() {
-    const modal = document.getElementById('leaderBoardModal'); 
-    const closeBtn = document.getElementById('closeLeaderboardBtn');
-    
-    closeBtn.addEventListener('click', closeLeaderBoardModal);
-    
-    window.addEventListener('click', function(event) {
-        if (event.target === modal) {
-            closeLeaderBoardModal();
-        }
-    });
-    
-    document.addEventListener('keydown', function(event) {
-        if (event.key === 'Escape' && modal.style.display === 'block') {
-            closeLeaderBoardModal();
-        }
-    });
+function clearLeaderboard() {
+    leaderBoard = []; 
+    saveToStorageLeaderBoard(); 
+    updateLeaderboardTable(); 
 }
 
 function openLeaderBoardModal() {
-    updateLeaderBoardTable();
-    const modal = document.getElementById('leaderBoardModal');
-    modal.style.display = 'block';
+    updateLeaderboardTable();
+    const leaderBoardModal = document.getElementById('leaderBoardModal');
+    leaderBoardModal.style.display = 'block';
 }
 
 function closeLeaderBoardModal() {
-    const modal = document.getElementById('leaderBoardModal');
-    modal.style.display = 'none';
+    const leaderBoardModal = document.getElementById('leaderBoardModal');
+    leaderBoardModal.style.display = 'none';
 }
 
 function saveScoreToLeaderboard() {
@@ -221,12 +246,10 @@ function saveScoreToLeaderboard() {
     }
     
     saveToStorageLeaderBoard();
-       
-    closeFinishModal();
     resetGame();
 }
 
-function updateLeaderBoardTable() {
+function updateLeaderboardTable() {
     const tbody = document.getElementById('leaderboardTableBody');
     if (!tbody) return;
     
