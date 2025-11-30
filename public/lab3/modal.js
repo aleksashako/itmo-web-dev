@@ -92,7 +92,6 @@ function setupModalEventListeners() {
   
     saveBtn.addEventListener('click', function() {
         saveScoreToLeaderboard();
-        resetScore();
         afterSaveActions();
 
     });
@@ -147,6 +146,25 @@ function afterSaveActions() {
     saveBtn.style.display = 'none';
     restartBtn.style.display = 'none';
     newRestartBtn.style.display = 'block';
+}
+
+function resetModalState() {
+    let nameInput = document.getElementById('playerName');
+    let prevTitle = document.getElementById('game-over-modal-title');
+    let newTitle = document.getElementById('game-over-modal-title-saved');
+    let scoreContainerModal = document.getElementById('scoreContainerModal');
+    let saveBtn = document.getElementById('saveResultToLeaderBoardBtn');
+    let restartBtn = document.getElementById('restartBtn');
+    let newRestartBtn = document.getElementById('restartAfterSaveBtn');
+
+    nameInput.style.display = 'block';
+    nameInput.value = '';
+    prevTitle.style.display = 'block';
+    newTitle.style.display = 'none';
+    scoreContainerModal.style.display = 'block';
+    saveBtn.style.display = 'block';
+    restartBtn.style.display = 'block';
+    newRestartBtn.style.display = 'none';
 }
 
 // LEADERBORAD PART
@@ -246,7 +264,6 @@ function saveScoreToLeaderboard() {
     }
     
     saveToStorageLeaderBoard();
-    resetGame();
 }
 
 function updateLeaderboardTable() {
