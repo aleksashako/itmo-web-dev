@@ -1,7 +1,4 @@
-let board = createEmptyBoard();
-let curPosition = [];
 let leaderBoard = [];
-let score = 0;
 
 function loadPage() {
     let body = document.querySelector('body');
@@ -47,6 +44,11 @@ function loadPage() {
     const buttonsContainer = document.createElement('div');
     buttonsContainer.className = 'buttons-container';
     
+    const undoButton = document.createElement('button');
+    undoButton.id = 'undo-btn';
+    undoButton.className = 'control-btn';
+    undoButton.textContent = '↩';
+
     const restartButton = document.createElement('button');
     restartButton.id = 'restart-btn';
     restartButton.className = 'control-btn';
@@ -57,6 +59,7 @@ function loadPage() {
     leaderBoardButton.className = 'control-btn';
     leaderBoardButton.textContent = 'Leaderboard';
     
+    buttonsContainer.appendChild(undoButton);
     buttonsContainer.appendChild(restartButton);
     buttonsContainer.appendChild(leaderBoardButton);
     controlsPanel.appendChild(buttonsContainer);
@@ -65,19 +68,6 @@ function loadPage() {
     playingFieldContainer.id = 'playingFieldContainer';
     playingFieldContainer.className = 'playing-field-container';
     container.appendChild(playingFieldContainer);
-
-    for (let row = 0; row < 4; row++) {
-        for (let col = 0; col < 4; col++) {
-            const tile = document.createElement('div');
-            tile.id = `tile-${row}-${col}`;
-            tile.className = 'tile';
-            tile.dataset.row = row;
-            tile.dataset.col = col;
-            tile.textContent = ''; 
-            
-            playingFieldContainer.appendChild(tile);
-        }
-    }
 
     restartButton.addEventListener('click', () => {
         resetGame();
@@ -92,26 +82,19 @@ function loadPage() {
     loadFromStorageGame();
     loadFromStorageScore();
     loadFromStorageLeaderBoard();
-    // renderBoard();
-    updateScore(); 
-}
 
-function createEmptyBoard() {
-  const arr = [];
-  for (let r = 0; r < 4; r++) {
-    arr.push(new Array(4).fill(0));
-  }
-  return arr;
+    setGame();
+    updateAllTiles();
 }
 
 function saveToStorageGame() {
-    localStorage.setItem('currentGamePosition', JSON.stringify(curPosition));
+    localStorage.setItem('currentGamePosition', JSON.stringify(board));
 }
 
 function loadFromStorageGame() {
-    let curPos = localStorage.getItem('currentGamePosition');
-    if (curPos) {
-        curPosition = JSON.parse(curPos);
+    let savedBoard = localStorage.getItem('currentGamePosition');
+    if (savedBoard) {
+        board = JSON.parse(savedBoard);
     }
 }
 
@@ -122,7 +105,7 @@ function saveToStorageScore() {
 function loadFromStorageScore() {
     let curScore = localStorage.getItem('currentScore');
     if (curScore) {
-        score = parseInt(curScore) ||0; 
+        score = parseInt(curScore) || 0; 
     }
 }
 
@@ -136,15 +119,6 @@ function loadFromStorageLeaderBoard() {
         leaderBoard = JSON.parse(curLeaderB); 
     }
 }
-
-// function renderBoard() {
-//     for (let r = 0; r < 4; r++) {
-//         for (let c = 0; c < 4; c++) {
-//             const tile = document.getElementById(`tile-${r}-${c}`);
-//             updateTile(tile, board[r][c]);
-//         }
-//     }
-// }
 
 // для перезагрзки
 function updateScore() {
@@ -167,9 +141,16 @@ function resetScore() {
 
 function resetGame() {
     score = 0;
-    board = createEmptyBoard();
-    saveToStorageScore();
+    board = [
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0],
+        [0, 0, 0, 0]
+    ];
+    setGame();
     updateScore();
+    saveToStorageScore();
+    saveToStorageGame();
 }
 
 // просто чтобы побаловаться, добавляюю очки и проверить логику restart
@@ -183,6 +164,4 @@ document.addEventListener('DOMContentLoaded', () => {
     loadPage();
     createGameOverModal(); 
     createLeaderBoardModal();
-    leaderBoard = []
 });
-
