@@ -1,7 +1,7 @@
 let board = createEmptyBoard();
 let curPosition = [];
 let leaderBoard = [];
-let score = 56695;
+let score = 0;
 
 function loadPage() {
     let body = document.querySelector('body');
@@ -90,8 +90,10 @@ function loadPage() {
     body.appendChild(main);
 
     loadFromStorageGame();
+    loadFromStorageScore();
+    loadFromStorageLeaderBoard();
     // renderBoard();
-    updateMainScore(); 
+    updateScore(); 
 }
 
 function createEmptyBoard() {
@@ -107,9 +109,20 @@ function saveToStorageGame() {
 }
 
 function loadFromStorageGame() {
-    const curPos = localStorage.getItem('currentGamePosition');
+    let curPos = localStorage.getItem('currentGamePosition');
     if (curPos) {
         curPosition = JSON.parse(curPos);
+    }
+}
+
+function saveToStorageScore() {
+    localStorage.setItem('currentScore', score.toString()); 
+}
+
+function loadFromStorageScore() {
+    let curScore = localStorage.getItem('currentScore');
+    if (curScore) {
+        score = parseInt(curScore) ||0; 
     }
 }
 
@@ -134,30 +147,42 @@ function loadFromStorageLeaderBoard() {
 // }
 
 // для перезагрзки
-function updateMainScore() {
+function updateScore() {
     const currentScoreElement = document.getElementById('curr-score');
+    const modalScoreElement = document.getElementById('modal-curr-score');
+    
     if (currentScoreElement) {
         currentScoreElement.textContent = score;
+    }
+    if (modalScoreElement) {
+        modalScoreElement.textContent = score;
     }
 }
 
 function resetScore() {
     score = 0;
-    updateMainScore();
-    updateScoreDisplay();
+    updateScore();
+    saveToStorageScore();
 }
 
 function resetGame() {
     score = 0;
     board = createEmptyBoard();
-    updateMainScore();
-    updateScoreDisplay();
+    saveToStorageScore();
+    updateScore();
 }
 
-
+// просто чтобы побаловаться, добавляюю очки и проверить логику restart
+function addToScore(points) {
+    score += points;
+    updateScore();
+    saveToStorageScore(); 
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     loadPage();
-    createFinishModal(); 
+    createGameOverModal(); 
     createLeaderBoardModal();
+    leaderBoard = []
 });
+
