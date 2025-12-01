@@ -7,3 +7,9 @@
 - [отчёт](https://github.com/aleksashako/itmo-web-dev/blob/main/public/lab2/README.md)
 - [deploy](https://aleksashako.github.io/itmo-web-dev/public/lab2/)
 
+
+### Лабораторная работа №3: 
+- [директория](https://github.com/aleksashako/itmo-web-dev/tree/main/public/lab3)
+- [отчёт](https://github.com/aleksashako/itmo-web-dev/blob/main/public/lab3/README.md)
+- [deploy](https://aleksashako.github.io/itmo-web-dev/public/lab3/)
+
