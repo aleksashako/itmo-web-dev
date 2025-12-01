@@ -76,11 +76,18 @@ function hasEmptyCells() {
 }
 
 function generateTiles() {
+    if (!canContinueGame()) {
+        openGameOverModal();
+        return;
+    }
+    
     if (hasEmptyCells()) {
         let i = 0;
         let count = Math.floor(Math.random() * 2 + 1);
+        let attempts = 0;
+        const maxAttempts = 10; 
 
-        while (i < count) {
+        while (i < count && attempts < maxAttempts) {
             let r = Math.floor(Math.random() * rows);
             let c = Math.floor(Math.random() * columns);
 
@@ -93,13 +100,21 @@ function generateTiles() {
 
                 i++;
             }
+            attempts++;
+        }
+
+        if (!canContinueGame()) {
+            openGameOverModal();
+            return;
         }
 
         saveToStorageGame();
-
-    } else if (!canContinueGame()) {
-        openGameOverModal();
-        return;
+    }
+    else {
+        if (!canContinueGame()) {
+            openGameOverModal();
+            return;
+        }
     }
 }
 
@@ -188,9 +203,10 @@ function merge(row) {
     while (row.length < columns) {
         row.push(0);
     }
-    
     return row;
 }
+
+
 
 function slideLeft() {
     for (let r = 0; r < rows; r++) {
