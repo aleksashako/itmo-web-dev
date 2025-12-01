@@ -3,6 +3,10 @@ let rows = 4;
 let columns = 4;
 var board;
 
+let prevBoard = null;
+let prevScore = 0;
+let hasPreviousState = false;
+
 function setGame() {
 
     board = [
@@ -11,6 +15,7 @@ function setGame() {
         [0, 0, 0, 0],
         [0, 0, 0, 0]
     ]
+    score = 0;
 
     const playingFieldContainer = document.getElementById('playingFieldContainer');
     playingFieldContainer.innerHTML = '';
@@ -24,12 +29,13 @@ function setGame() {
             playingFieldContainer.appendChild(tile);
         }
     }
+
     if (isBoardEmpty()) {
         generateTiles();
     } else {
-        updateAllTiles(); 
+        updateAllTiles();
     }
-    
+
     saveToStorageGame();
 }
 
@@ -45,6 +51,20 @@ function isBoardEmpty() {
 }
 
 function canContinueGame() {
+    for (let r = 0; r < rows; r++)
+        for (let c = 0; c < columns; c++) {
+            if (board[r][c] === 0) return true;
+            if (c < columns - 1 && board[r][c] === board[r][c + 1]) {
+                return true;
+            }
+            if (r < rows - 1 && board[r][c] === board[r + 1][c]) {
+                return true;
+            }
+        }
+    return false;
+}
+
+function hasEmptyCells() {
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < columns; c++) {
             if (board[r][c] == 0) {
@@ -56,39 +76,46 @@ function canContinueGame() {
 }
 
 function generateTiles() {
-    if (!canContinueGame()) {
+    if (hasEmptyCells()) {
+        let i = 0;
+        let count = Math.floor(Math.random() * 2 + 1);
+
+        while (i < count) {
+            let r = Math.floor(Math.random() * rows);
+            let c = Math.floor(Math.random() * columns);
+
+            if (board[r][c] == 0) {
+                let randomTile = Math.random() < 0.8 ? 2 : 4;
+                board[r][c] = randomTile;
+
+                let tile = document.getElementById('tile-' + r.toString() + '-' + c.toString());
+                updateTile(tile, randomTile);
+
+                i++;
+            }
+        }
+
+        saveToStorageGame();
+
+    } else if (!canContinueGame()) {
         openGameOverModal();
         return;
     }
-
-    let i = 0;
-    let count = Math.floor(Math.random() * 2 + 1);
-    while (i < count) {
-        let r = Math.floor(Math.random() * rows);
-        let c = Math.floor(Math.random() * columns);
-
-        if (board[r][c] == 0) {
-            let randomTile = Math.random() < 0.8 ? 2 : 4;
-            board[r][c] = randomTile;
-            let tile = document.getElementById('tile-' + r.toString() + '-' + c.toString());
-            updateTile(tile, randomTile);
-            i++;
-        }
-    }
-    saveToStorageGame();
 }
 
 function updateTile(tile, num) {
     tile.textContent = "";
-    tile.classList.value = ""; 
+    tile.classList.value = "";
     tile.classList.add("tile");
+
     if (num > 0) {
         tile.textContent = num.toString();
+
         if (num <= 4096) {
-            tile.classList.add("x"+num.toString());
+            tile.classList.add("x" + num.toString());
         } else {
             tile.classList.add("x8192");
-        }                
+        }
     }
 }
 
@@ -103,24 +130,30 @@ function updateAllTiles() {
 }
 
 document.addEventListener('keyup', (e) => {
+
     if (e.code == "ArrowLeft") {
+        saveStateForUndo();
         slideLeft();
         generateTiles();
     }
     else if (e.code == "ArrowRight") {
+        saveStateForUndo();
         slideRight();
         generateTiles();
     }
     else if (e.code == "ArrowUp") {
+        saveStateForUndo();
         slideUp();
         generateTiles();
     }
     else if (e.code == "ArrowDown") {
+        saveStateForUndo();
         slideDown();
         generateTiles();
     }
+
     updateScore();
-})
+});
 
 function getRidOfZeros(row){
     return row.filter(num => num != 0); 
@@ -129,14 +162,14 @@ function getRidOfZeros(row){
 function merge(row) {
     // remove 0
     row = getRidOfZeros(row); 
+
     // merging
-    for (let i = 0; i < row.length-1; i++){
-        if (row[i] == row[i+1]) {
+    for (let i = 0; i < row.length - 1; i++) {
+        if (row[i] == row[i + 1]) {
             row[i] *= 2;
             score += row[i];
-            row[i+1] = 0;
-
-            // not like in basic 2048, merge till no other oprions
+            row[i + 1] = 0; 
+            // not like in basic 2048, merge till no other options
             for (let j = i + 1; j < row.length - 1; j++) {
                 row[j] = row[j + 1];
                 row[j + 1] = 0;
@@ -157,7 +190,8 @@ function slideLeft() {
         let row = board[r];
         row = merge(row);
         board[r] = row;
-        for (let c = 0; c < columns; c++){
+
+        for (let c = 0; c < columns; c++) {
             let tile = document.getElementById('tile-' + r.toString() + "-" + c.toString());
             let num = board[r][c];
             updateTile(tile, num);
@@ -170,8 +204,9 @@ function slideRight() {
         let row = board[r];
         row.reverse();
         row = merge(row);
-        board[r] = row.reverse();   
-        for (let c = 0; c < columns; c++){
+        board[r] = row.reverse();
+
+        for (let c = 0; c < columns; c++) {
             let tile = document.getElementById('tile-' + r.toString() + "-" + c.toString());
             let num = board[r][c];
             updateTile(tile, num);
@@ -184,7 +219,7 @@ function slideUp() {
         let row = [board[0][c], board[1][c], board[2][c], board[3][c]];
         row = merge(row);
 
-        for (let r = 0; r < rows; r++){
+        for (let r = 0; r < rows; r++) {
             board[r][c] = row[r];
             let tile = document.getElementById('tile-' + r.toString() + "-" + c.toString());
             let num = board[r][c];
@@ -200,11 +235,50 @@ function slideDown() {
         row = merge(row);
         row.reverse();
 
-        for (let r = 0; r < rows; r++){
+        for (let r = 0; r < rows; r++) {
             board[r][c] = row[r];
             let tile = document.getElementById('tile-' + r.toString() + "-" + c.toString());
             let num = board[r][c];
             updateTile(tile, num);
         }
+    }
+}
+
+// всё для отмены хода
+function saveStateForUndo() {
+    prevBoard = copyBoard(board);
+    prevScore = score;
+    hasPreviousState = true;
+
+    updateUndoButton();
+}
+
+function copyBoard(boardToCopy) {
+    return boardToCopy.map(row => [...row]);
+}
+
+function undo() {
+    if (!hasPreviousState) return;
+
+    board = copyBoard(prevBoard);
+    score = prevScore;
+
+    updateAllTiles();
+    updateScore();
+
+    saveToStorageGame();
+    saveToStorageScore();
+
+    hasPreviousState = false;
+    prevBoard = null;
+    prevScore = 0;
+
+    updateUndoButton();
+}
+
+function updateUndoButton() {
+    const undoButton = document.getElementById('undo-btn');
+    if (undoButton) {
+        undoButton.disabled = !hasPreviousState;
     }
 }
