@@ -155,33 +155,36 @@ document.addEventListener('keyup', (e) => {
     updateScore();
 });
 
-function getRidOfZeros(row){
-    return row.filter(num => num != 0); 
+function getRidOfZeros(row) {
+    return row.filter(num => num != 0);
 }
 
 function merge(row) {
     // remove 0
-    row = getRidOfZeros(row); 
+    row = getRidOfZeros(row);
 
     // merging
     for (let i = 0; i < row.length - 1; i++) {
         if (row[i] == row[i + 1]) {
             row[i] *= 2;
             score += row[i];
-            row[i + 1] = 0; 
+            row[i + 1] = 0;
+
             // not like in basic 2048, merge till no other options
             for (let j = i + 1; j < row.length - 1; j++) {
                 row[j] = row[j + 1];
                 row[j + 1] = 0;
             }
         }
-    } 
+    }
+
     row = getRidOfZeros(row);
 
     // add 0 back
     while (row.length < columns) {
         row.push(0);
-    } 
+    }
+
     return row;
 }
 
