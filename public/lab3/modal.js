@@ -75,16 +75,16 @@ function createGameOverModal() {
     
     document.body.appendChild(modal);
 
-    // кнопка временная, для проверки модального окна
-    const openGameOverModalBtn = document.createElement('button');
-    openGameOverModalBtn.id = 'openGameOverModalBtn';
-    openGameOverModalBtn.textContent = 'open game over modal';
-    document.body.appendChild(openGameOverModalBtn);
+    // // кнопка временная, для проверки модального окна
+    // const openGameOverModalBtn = document.createElement('button');
+    // openGameOverModalBtn.id = 'openGameOverModalBtn';
+    // openGameOverModalBtn.textContent = 'open game over modal';
+    // document.body.appendChild(openGameOverModalBtn);
     
-    setupModalEventListeners();
+    addModalActions();
 }
 
-function setupModalEventListeners() {
+function addModalActions() {
     let modal = document.getElementById('gameOverModal');
     let saveBtn = document.getElementById('saveResultToLeaderBoardBtn');
     let restartBtn = document.getElementById('restartBtn');
@@ -113,10 +113,10 @@ function setupModalEventListeners() {
         }
     });
 
-    let openModal = document.getElementById('openGameOverModalBtn');
-    openModal.addEventListener('click',  function() {
-        openGameOverModal();
-    })
+    // let openModal = document.getElementById('openGameOverModalBtn');
+    // openModal.addEventListener('click',  function() {
+    //     openGameOverModal();
+    // })
 }
 
 function openGameOverModal() {
