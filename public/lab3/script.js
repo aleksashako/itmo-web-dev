@@ -230,6 +230,7 @@ function resetGame() {
     saveToStorageScore();
     saveToStorageGame();
     updateUndoButton();
+    resetModalState();
 }
 
 // просто чтобы побаловаться, добавляюю очки и проверить логику restart
