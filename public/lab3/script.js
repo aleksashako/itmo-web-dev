@@ -69,6 +69,33 @@ function loadPage() {
     playingFieldContainer.className = 'playing-field-container';
     container.appendChild(playingFieldContainer);
 
+    const mobileButtonsContainer = document.createElement('div');
+    mobileButtonsContainer.id = 'mobileButtonsContainer';
+    mobileButtonsContainer.className = 'mobile-btn-container';
+
+    let mobBtn1 = document.createElement('button');
+    mobBtn1.id = 'mob-btn-a';
+    mobBtn1.className = 'mob-btn-a';
+    mobBtn1.textContent = '◄';
+    let mobBtn2 = document.createElement('button');
+    mobBtn2.id = 'mob-btn-b';
+    mobBtn2.className = 'mob-btn-b';
+    mobBtn2.textContent = '▲';
+    let mobBtn3 = document.createElement('button');
+    mobBtn3.id = 'mob-btn-c';
+    mobBtn3.className = 'mob-btn-c';
+    mobBtn3.textContent = '▼';
+    let mobBtn4 = document.createElement('button');
+    mobBtn4.id = 'mob-btn-d';
+    mobBtn4.className = 'mob-btn-d';
+    mobBtn4.textContent = '►';
+    mobileButtonsContainer.append(mobBtn1, mobBtn2, mobBtn3, mobBtn4);
+    container.appendChild(mobileButtonsContainer);
+
+    undoButton.addEventListener('click', () => {
+        undo();
+    });
+
     restartButton.addEventListener('click', () => {
         resetGame();
     });
@@ -84,8 +111,54 @@ function loadPage() {
     loadFromStorageLeaderBoard();
 
     setGame();
+    addMobBtnListeners();
     updateAllTiles();
+    updateUndoButton();
 }
+
+function addMobBtnListeners() {
+    const mobBtnLeft = document.getElementById('mob-btn-a');
+    const mobBtnRight = document.getElementById('mob-btn-d');
+    const mobBtnUp = document.getElementById('mob-btn-b');
+    const mobBtnDown = document.getElementById('mob-btn-c');
+    
+    if (mobBtnLeft) {
+        mobBtnLeft.addEventListener('click', () => {
+            saveStateForUndo();
+            slideLeft();
+            generateTiles();
+            updateScore();
+        });
+    }
+    
+    if (mobBtnRight) {
+        mobBtnRight.addEventListener('click', () => {
+            saveStateForUndo();
+            slideRight();
+            generateTiles();
+            updateScore();
+        });
+    }
+    
+    if (mobBtnUp) {
+        mobBtnUp.addEventListener('click', () => {
+            saveStateForUndo();
+            slideUp();
+            generateTiles();
+            updateScore();
+        });
+    }
+    
+    if (mobBtnDown) {
+        mobBtnDown.addEventListener('click', () => {
+            saveStateForUndo();
+            slideDown();
+            generateTiles();
+            updateScore();
+        });
+    }
+}
+
 
 function saveToStorageGame() {
     localStorage.setItem('currentGamePosition', JSON.stringify(board));
@@ -147,10 +220,16 @@ function resetGame() {
         [0, 0, 0, 0],
         [0, 0, 0, 0]
     ];
+
+    prevBoard = null;
+    prevScore = 0;
+    hasPreviousState = false;
+
     setGame();
     updateScore();
     saveToStorageScore();
     saveToStorageGame();
+    updateUndoButton();
 }
 
 // просто чтобы побаловаться, добавляюю очки и проверить логику restart
@@ -165,3 +244,4 @@ document.addEventListener('DOMContentLoaded', () => {
     createGameOverModal(); 
     createLeaderBoardModal();
 });
+
