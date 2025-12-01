@@ -163,28 +163,32 @@ function merge(row) {
     // remove 0
     row = getRidOfZeros(row);
 
-    // merging
-    for (let i = 0; i < row.length - 1; i++) {
-        if (row[i] == row[i + 1]) {
-            row[i] *= 2;
-            score += row[i];
-            row[i + 1] = 0;
-
-            // not like in basic 2048, merge till no other options
-            for (let j = i + 1; j < row.length - 1; j++) {
-                row[j] = row[j + 1];
-                row[j + 1] = 0;
+    let changed = true; 
+    
+    // not like in basic 2048, merge till no other options
+    while (changed) {
+        changed = false;
+        let newRow = [];
+        // merging
+        for (let i = 0; i < row.length; i++) {
+            if (i < row.length - 1 && row[i] === row[i + 1]) {
+                const merged = row[i] * 2;
+                newRow.push(merged);
+                score += merged;
+                i++; 
+                changed = true;
+            } else {
+                newRow.push(row[i]);
             }
         }
+        row = getRidOfZeros(newRow); 
     }
-
-    row = getRidOfZeros(row);
 
     // add 0 back
     while (row.length < columns) {
         row.push(0);
     }
-
+    
     return row;
 }
 
