@@ -18,7 +18,7 @@ function setGame() {
     score = 0;
 
     const playingFieldContainer = document.getElementById('playingFieldContainer');
-    playingFieldContainer.innerHTML = '';
+    playingFieldContainer.textContent = '';
 
     for (let r = 0; r < rows; r++) {
         for (let c = 0; c < columns; c++) {
