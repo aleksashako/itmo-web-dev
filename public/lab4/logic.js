@@ -47,28 +47,37 @@ function parseWeatherData(rawData) {
 
 async function updateLocationWeather(location) {
     try {
-        location.status = 'loading';
+        location.error = null; 
+        renderLocations(); 
 
         const rawData = await fetchWeatherByCoords(location.lat, location.lon);
         const parsed = parseWeatherData(rawData);
 
         if (!parsed) {
-            throw new Error('Parsing error');
+            throw new Error('Failed to parse weather data');
         }
 
         location.weather = parsed;
-        location.status = 'success';
-
-        renderLocations(); 
-    } catch (error) {
-        location.status = 'error';
-        console.error('updateLocationWeather error:', error);
         renderLocations();
+        saveToStorage();
+    } catch (error) {
+        location.weather = null;
+        location.error = error.message;
+
+        renderLocations();
+        saveToStorage();
+        throw error;
     }
 }
 
 async function updateAllWeather() {
-    const tasks = locations.map(location => updateLocationWeather(location));
+    const tasks = locations.map(async location => {
+        try {
+            await updateLocationWeather(location);
+        } catch (_) {
+        }
+    });
+
     await Promise.all(tasks);
 }
 
@@ -76,7 +85,74 @@ function searchCities(query, limit = 10) {
     const q = query.trim().toLowerCase();
     if (q.length < 2) return [];
 
-    return CITIES_DATA
+    return worldcities
         .filter(city => city.name.toLowerCase().startsWith(q))
         .slice(0, limit);
+}
+
+function deleteCity(location) {
+    if (location.type == 'geo') {
+        showCityModalForCurrentLocation();
+        locations = locations.filter(l => l.type != 'geo');
+
+        updateLocationWeather(location);
+        saveToStorage();
+        return;
+    }
+
+    locations = locations.filter(l => l != location);
+    saveToStorage();
+    renderLocations();
+}
+
+function addCity(city) {
+    if (locations.length == MAX_LOCATIONS) {
+        showFormError('Maximum number of cities reached');
+        return;
+    }
+
+    if (
+        locations.some(l =>
+            Math.abs(l.lat - city.lat) < 0.0001 &&
+            Math.abs(l.lon - city.lon) < 0.0001
+        )
+    ) {
+        showFormError('City already added');
+        return;
+    }
+
+    const location = {
+        id: Date.now(),
+        name: `${city.name}, ${city.country}`,
+        lat: city.lat,
+        lon: city.lon,
+        weather: null,
+        error: ''
+    };
+
+    locations.push(location);
+    saveToStorage();
+    updateAllWeather();
+    renderLocations();
+    clearFormError();
+}
+
+async function refreshCity(location, button) {
+    button.disabled = true;
+    const originalText = button.textContent;
+    button.textContent = 'Loading...';
+
+    try {
+        location.error = null;
+        await updateLocationWeather(location);
+    } catch (err) {
+        console.error('Error updating weather for', location.name, err);
+        location.weather = null;
+        location.error = err?.message || 'Failed to load weather data';
+
+        renderLocations();
+    } finally {
+        button.disabled = false;
+        button.textContent = originalText;
+    }
 }
