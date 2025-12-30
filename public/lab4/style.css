@@ -1,0 +1,242 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #e8f5e9; 
+    color: #2e7d32; 
+}
+
+h1, h2 {
+    margin: 0;
+    padding: 0.5em;
+}
+
+button {
+    cursor: pointer;
+    border: 1px solid #2e7d32;
+    background-color: #a5d6a7; 
+    color: #1b5e20;
+    padding: 0.3em 0.6em;
+    margin: 0.2em;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #81c784;
+}
+
+input[type="text"], input[type="date"], select {
+    padding: 0.3em;
+    margin: 0.2em 0;
+    border: 1px solid #2e7d32;
+    border-radius: 4px;
+}
+
+
+.page-header {
+    position: relative;
+    text-align: center;
+    background-color: #a5d6a7;
+    padding: 10px 70px; 
+}
+
+.refresh-all-btn {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85em;
+    padding: 4px 8px;
+}
+
+.clear-all-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85em;
+    padding: 4px 8px;
+}
+
+.content {
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+
+.refresh-city-btn {
+    font-size: 0.8em;
+    padding: 3px 6px;
+    border: 1px solid #2e7d32;
+    background-color: #a5d6a7;
+    color: #1b5e20;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.refresh-city-btn:hover {
+    background-color: #81c784;
+}
+
+
+.current-location-container {
+    margin-bottom: 20px;
+}
+.weather-card { 
+    background: #e9f6ec; 
+    border-radius: 12px; 
+    padding: 12px; 
+    margin-bottom: 12px; 
+    font-size: 14px; 
+}
+
+.weather-card--main {
+    background: #d6f2dd;
+    padding: 20px;
+    font-size: 16px;
+    border: 2px solid #365c42;
+}
+
+.weather-card--main h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+}
+
+.weather-card--main .forecast-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    overflow-x: auto;
+}
+
+.weather-card--main .day-block {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    min-width: 140px;
+    text-align: center;
+}
+
+.weather-card--main .day-parts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.weather-card--main .day-part {
+    background: #f3fbf5;
+    border-radius: 6px;
+    padding: 4px;
+    font-size: 13px;
+}
+
+.locations-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    justify-content: center;
+    margin-top: 1em; 
+}
+
+.weather-card h2 {
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    font-size: 1.2em;
+    margin: 0 0 0.5em 0;
+    padding: 0 5px;
+}
+
+.current-weather {
+    margin-bottom: 6px;
+}
+
+.status-text {
+    font-size: 0.9em;
+    margin-bottom: 0.5em;
+    color: #1b5e20;
+}
+
+.current-weather, .forecast-container {
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+
+.day-block {
+    margin-bottom: 0.5em;
+}
+
+.day-title {
+    font-weight: bold;
+    font-size: 0.95em;
+    margin-bottom: 0.2em;
+}
+
+.day-parts {
+    display: flex;
+    justify-content: space-between;
+}
+
+.day-part {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8em;
+    padding: 4px 6px;
+    border-right: 1px solid #c8e6c9;
+    text-align: center;
+    flex: 1;
+}
+
+
+.city-form {
+    display: flex;
+    flex-direction: column;
+    margin: 1em 0;
+    width: 250px;
+}
+
+.suggestions {
+    background-color: #a5d6a7;
+    border: 1px solid #2e7d32;
+    max-height: 100px;
+    overflow-y: auto;
+    margin-bottom: 0.2em;
+}
+
+.suggestion-item {
+    padding: 0.3em;
+}
+
+.suggestion-item:hover {
+    background-color: #81c784;
+}
+
+.form-error {
+    color: #b71c1c; 
+    font-size: 0.85em;
+}
+
+.locations-container { 
+    overflow-x: auto; 
+    white-space: nowrap; } 
+
+.locations-container .weather-card { 
+    display: inline-block; 
+    vertical-align: top; 
+    margin-right: 0.5em; 
+}
+
+@media (max-width: 600px) {
+    .weather-card {
+        width: 90%;
+    }
+
+    .city-form, .refresh-all-btn {
+        width: 90%;
+    }
+}
+
+
