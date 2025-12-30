@@ -1,0 +1,374 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #0b1f06; 
+    color: #236927; 
+}
+
+h1, h2 {
+    margin: 0;
+    padding: 0.5em;
+}
+
+button {
+    cursor: pointer;
+    border: 1px solid #2e7d32;
+    background-color: #a5d6a7; 
+    color: #1b5e20;
+    padding: 0.3em 0.6em;
+    margin: 0.2em;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #1c4f12;
+    color: #a5d6a7;
+}
+
+input[type="text"], input[type="date"], select {
+    padding: 0.3em;
+    margin: 0.2em 0;
+    border: 1px solid #2e7d32;
+    border-radius: 4px;
+}
+
+.page-header {
+    position: relative;
+    text-align: center;
+    background-color: #a5d6a7;
+    padding: 10px 70px; 
+}
+
+.page-header h1 {
+    color: #1c4f12;
+}
+
+.refresh-all-btn {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85em;
+    padding: 4px 8px;
+}
+
+.clear-all-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.85em;
+    padding: 4px 8px;
+}
+
+.content {
+    padding: 1em;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.additional-locations {
+    color: #a5d6a7;
+}
+
+.current-location-container {
+    margin-bottom: 10px;
+}
+
+.weather-card { 
+    background: #e9f6ec; 
+    border-radius: 12px; 
+    padding: 12px; 
+    margin-bottom: 12px; 
+    font-size: 14px; 
+}
+
+.weather-error {
+    padding: 12px;
+    color: #b00020;
+    background: rgba(176, 0, 32, 0.08);
+    border-radius: 8px;
+    margin: 12px;
+    font-size: 0.9em;
+}
+
+.weather-card--main {
+    background: #aedbb1;
+    padding: 20px;
+    font-size: 16px;
+}
+
+.weather-card--main h2 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #cfe8d0;
+}
+
+.weather-card--main .current-weather {
+    color:#236927;;
+}
+
+.weather-card--main .forecast-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    overflow-x: auto;
+}
+
+.weather-card--main .day-block {
+    background: #ffffff;
+    border-radius: 10px;
+    padding: 10px;
+    min-width: 140px;
+    text-align: center;
+}
+
+.weather-card--main .day-parts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 6px;
+}
+
+.weather-card--main .day-part {
+    background: #d5eddb;
+    border-radius: 6px;
+    padding: 4px;
+    font-size: 13px;
+}
+
+.weather-card--main .day-title {
+    font-weight: bold;
+    font-size: 0.95em;
+    margin-bottom: 0.2em;
+    color:#6e8c70;
+}
+
+.city-btn {
+    font-size: 0.85em;
+    padding: 4px 8px;
+    border: none;
+    background-color: transparent;
+    color: #000000;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.city-btn:hover {
+    background-color: transparent;
+    color: #000000;
+}
+
+.locations-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    justify-content: center;
+    margin-top: 1em; 
+}
+
+.locations-container .weather-card { 
+    display: inline-block; 
+    vertical-align: top; 
+    margin-right: 0.5em; 
+    background: #fdfdfd; 
+    border-radius: 12px; 
+    padding: 12px; 
+    margin-bottom: 12px; 
+    font-size: 14px; 
+    border: 2px solid #365c42;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.card-header .card-btns {
+    display: flex;
+    gap: 6px;
+}
+
+.weather-card .card-header {
+    display: flex;
+    font-weight: bold;
+    justify-content: space-between; 
+    align-items: center;
+    font-size: 1.2em;
+    margin: 0 0 0 0;
+    padding: 0 5px;
+}
+
+.current-weather {
+    display:flex;
+    margin-bottom: 9px;
+    justify-content: center;
+}
+
+.status-text {
+    font-size: 0.9em;
+    margin-bottom: 0.5em;
+    color: #1b5e20;
+}
+
+.day-block {
+    background: #1f4a15db;
+    border-radius: 10px;
+    padding: 10px;
+    min-width: 140px;
+    text-align: center;
+    margin: 5px;
+}
+
+.day-title {
+    font-weight: bold;
+    font-size: 0.95em;
+    margin-bottom: 0.2em;
+    color:#b0cfb2;
+}
+
+.day-parts {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 6px;
+}
+
+.day-part {
+    display: flex;
+    flex-direction: column;
+    font-size: 0.8em;
+    padding: 4px 6px;
+    border-right: 1px solid #334533;
+    background: #f3fbf5;
+    text-align: center;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+.city-form {
+    display: flex;
+    flex-direction: column;
+    width: 250px;
+}
+
+.suggestions {
+    background-color: #a5d6a7;
+    border: 1px solid #2e7d32;
+    max-height: 100px;
+    overflow-y: auto;
+    margin-bottom: 0.2em;
+}
+
+.suggestion-item {
+    padding: 0.3em;
+}
+
+.suggestion-item:hover {
+    background-color: #81c784;
+}
+
+.form-error {
+    color: #b71c1c; 
+    font-size: 0.85em;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.modal-content {
+    background-color: #f0fff0;
+    padding: 20px;
+    border-radius: 12px;
+    min-width: 300px;
+}
+
+
+@media (max-width: 768px) {
+
+    body {
+        font-size: 14px;
+    }
+
+    .page-header {
+        padding: 8px 50px;
+    }
+
+    .page-header h1 {
+        font-size: 1.2em;
+    }
+
+    .refresh-all-btn,
+    .clear-all-btn {
+        font-size: 0.75em;
+        padding: 3px 6px;
+    }
+
+    .content {
+        padding: 0.5em;
+    }
+
+    .locations-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8em;
+    }
+
+    .weather-card,
+    .weather-card--main {
+        width: 350px;
+        max-width: 90%;
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .weather-card--main h2 {
+        font-size: 18px;
+    }
+
+    .weather-card--main .forecast-container {
+        gap: 8px;
+    }
+
+    .day-block {
+        min-width: 120px;
+        padding: 8px;
+    }
+
+    .day-title {
+        font-size: 0.85em;
+    }
+
+    .day-parts {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+    }
+
+    .day-part {
+        font-size: 12px;
+        padding: 4px;
+    }
+
+    .city-form {
+        width: 100%;
+    }
+
+    .modal-content {
+        width: 90%;
+        min-width: unset;
+    }
+}
+
