@@ -2,14 +2,85 @@ let locations = [];
 let geoDenied = false;
 const MAX_LOCATIONS = 6;
 
-let CITIES_DATA = [];
+let worldcities = [];
+
+async function loadPage() {
+    loadFromStorage();
+
+    const body = document.body;
+    body.replaceChildren();
+
+    const app = document.createElement('div');
+    body.appendChild(app);
+
+    const header = document.createElement('header');
+    header.className = 'page-header';
+
+    const refreshAllBtn = document.createElement('button');
+    refreshAllBtn.textContent = 'Refresh all';
+    refreshAllBtn.className = 'refresh-all-btn';
+    refreshAllBtn.addEventListener('click', updateAllWeather);
+    header.appendChild(refreshAllBtn);
+
+    const title = document.createElement('h1');
+    title.textContent = 'Weather Forecast';
+    header.appendChild(title);
+    app.appendChild(header);
+
+    const main = document.createElement('main');
+    main.className = 'content';
+    app.appendChild(main);
+
+    const clearAllBtn = document.createElement('button');
+    clearAllBtn.textContent = 'Clear all locations';
+    clearAllBtn.className = 'clear-all-btn';
+    clearAllBtn.addEventListener('click', () => {
+        locations = locations.filter(l => l.type == 'geo');
+        saveToStorage();
+        renderLocations();
+    });
+    header.appendChild(clearAllBtn);
+
+    const currentContainer = document.createElement('div');
+    currentContainer.id = 'currentLocationContainer';
+    currentContainer.className = 'current-location-container';
+    main.appendChild(currentContainer);
+
+    const addLocs = document.createElement('h2');
+    addLocs.className = 'additional-locations';
+    addLocs.textContent = 'Additional Locations';
+
+    main.appendChild(addLocs);
+
+    main.appendChild(createCityForm());
+
+    const locationsContainer = document.createElement('div');
+    locationsContainer.id = 'locationsContainer';
+    locationsContainer.className = 'locations-container';
+    main.appendChild(locationsContainer);
+
+    if (locations.length == 0) requestGeolocation();
+    else renderLocations();
+}
+
+function saveToStorage() {
+    localStorage.setItem('locations', JSON.stringify(locations));
+    localStorage.setItem('geoDenied', JSON.stringify(geoDenied));
+}
+
+function loadFromStorage() {
+    const storedLocations = localStorage.getItem('locations');
+    const storedGeoDenied = localStorage.getItem('geoDenied');
+
+    if (storedLocations) locations = JSON.parse(storedLocations);
+    if (storedGeoDenied) geoDenied = JSON.parse(storedGeoDenied);
+}
 
 async function loadCitiesCSV() {
     const res = await fetch('worldcities.csv');
     const text = await res.text();
 
     const lines = text.split('\n').filter(Boolean);
-
     const header = parseCSVLine(lines.shift());
 
     const indexCity = header.indexOf('city_ascii');
@@ -17,9 +88,8 @@ async function loadCitiesCSV() {
     const indexLat = header.indexOf('lat');
     const indexLng = header.indexOf('lng');
 
-    CITIES_DATA = lines.map(line => {
+    worldcities = lines.map(line => {
         const cols = parseCSVLine(line);
-
         return {
             name: cols[indexCity],
             country: cols[indexCountry],
@@ -36,7 +106,6 @@ function parseCSVLine(line) {
 
     for (let i = 0; i < line.length; i++) {
         const char = line[i];
-
         if (char == '"' && line[i + 1] == '"') {
             current += '"';
             i++;
@@ -54,79 +123,11 @@ function parseCSVLine(line) {
     return result;
 }
 
-
-function saveToStorage() {
-    localStorage.setItem('locations', JSON.stringify(locations));
-    localStorage.setItem('geoDenied', JSON.stringify(geoDenied));
-}
-
-function loadFromStorage() {
-    const storedLocations = localStorage.getItem('locations');
-    const storedGeoDenied = localStorage.getItem('geoDenied');
-
-    if (storedLocations) locations = JSON.parse(storedLocations);
-    if (storedGeoDenied) geoDenied = JSON.parse(storedGeoDenied);
-}
-
-async function loadPage() {
-    loadFromStorage();
-
-    const body = document.body;
-    body.replaceChildren();
-
-    const app = document.createElement('div');
-    body.appendChild(app);
-
-    const header = document.createElement('header');
-    header.className = 'page-header';
-
-    const refreshAllBtn = document.createElement('button');
-    refreshAllBtn.textContent = 'Refresh';
-    refreshAllBtn.className = 'refresh-all-btn';
-    refreshAllBtn.addEventListener('click', updateAllWeather);
-    header.appendChild(refreshAllBtn);
-
-    const title = document.createElement('h1');
-    title.textContent = 'Weather Forecast';
-    header.appendChild(title);
-    app.appendChild(header);
-
-    const main = document.createElement('main');
-    main.className = 'content';
-    app.appendChild(main);
-
-
-    const clearAllBtn = document.createElement('button');
-    clearAllBtn.textContent = 'Clear All';
-    clearAllBtn.className = 'clear-all-btn';
-    clearAllBtn.addEventListener('click', () => {
-        locations = locations.filter(l => l.type == 'geo');
-        saveToStorage();
-        renderLocations();
-    });
-    header.appendChild(clearAllBtn);
-
-    const currentContainer = document.createElement('div');
-    currentContainer.id = 'currentLocationContainer';
-    currentContainer.className = 'current-location-container';
-    main.appendChild(currentContainer);
-
-    main.appendChild(createCityForm());
-
-    const locationsContainer = document.createElement('div');
-    locationsContainer.id = 'locationsContainer';
-    locationsContainer.className = 'locations-container';
-    main.appendChild(locationsContainer);
-
-    if (locations.length == 0) requestGeolocation();
-    else renderLocations();
-}
-
 function requestGeolocation() {
     if (!navigator.geolocation) {
         geoDenied = true;
+        showCityModalForCurrentLocation();
         saveToStorage();
-        renderLocations();
         return;
     }
 
@@ -139,7 +140,7 @@ function requestGeolocation() {
                 lat: pos.coords.latitude,
                 lon: pos.coords.longitude,
                 weather: null,
-                status: 'idle'
+                error: ''
             });
 
             saveToStorage();
@@ -148,16 +149,89 @@ function requestGeolocation() {
         () => {
             geoDenied = true;
             saveToStorage();
-            renderLocations();
+            showCityModalForCurrentLocation();
         }
     );
 }
 
-function resetGeolocation() {
-    locations = locations.filter(l => l.type == 'city');
-    geoDenied = false;
+function addCurrentLocation(cityName, countryName, lat, lon) {
+    const location = {
+        id: Date.now(),
+        type: 'geo',
+        name: `${cityName}, ${countryName}`,
+        lat: lat,
+        lon: lon,
+        weather: null,
+        error: ''
+    };
+
+    locations.unshift(location);
     saveToStorage();
+    updateAllWeather();
     renderLocations();
+}
+
+function showCityModalForCurrentLocation() {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+
+    const content = document.createElement('div');
+    content.className = 'modal-content';
+
+    const title = document.createElement('h2');
+    title.textContent = 'Select your location';
+    content.appendChild(title);
+
+    const cityForm = createCityFormForModal(modal);
+    content.appendChild(cityForm);
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+}
+
+function createCityFormForModal(modal) {
+    const form = document.createElement('div');
+    form.className = 'city-form';
+
+    const input = document.createElement('input');
+    input.placeholder = 'Enter city name';
+
+    const list = document.createElement('div');
+    list.className = 'suggestions';
+
+    const error = document.createElement('div');
+    error.className = 'form-error';
+
+    form.append(input, list, error);
+
+    input.addEventListener('input', () => {
+        const value = input.value.trim();
+        list.innerHTML = '';
+        error.textContent = '';
+        if (value.length < 2) return;
+
+        const results = searchCities(value);
+        if (results.length == 0) {
+            error.textContent = 'City not found';
+            return;
+        }
+
+        results.forEach(city => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.textContent = `${city.name}, ${city.country}`;
+
+            item.addEventListener('click', () => {
+                addCurrentLocation(city.name, city.country, city.lat, city.lon);
+                modal.remove(); 
+            });
+
+            list.appendChild(item);
+        });
+    });
+    updateAllWeather();
+
+    return form;
 }
 
 function renderLocations() {
@@ -183,22 +257,38 @@ function createWeatherCard(location) {
     const card = document.createElement('div');
     card.className = 'weather-card';
 
-    const cardHeader = document.createElement('h2');
-    cardHeader.textContent = location.name;
+    const cardHeader = document.createElement('div');
+    cardHeader.className = 'card-header';
+
+    const title = document.createElement('span');
+    title.textContent = location.name;
+    cardHeader.appendChild(title);
+
+    const btnContainer = document.createElement('div');
+    btnContainer.className = 'card-btns';
 
     const reFrBtn = document.createElement('button');
-    reFrBtn.textContent = 'Refresh city';
-    reFrBtn.className = 'refresh-city-btn';
+    reFrBtn.textContent = '🗘';
+    reFrBtn.className = 'city-btn';
     reFrBtn.addEventListener('click', () => refreshCity(location, reFrBtn));
-    cardHeader.appendChild(reFrBtn);
+    btnContainer.appendChild(reFrBtn);
 
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = '×';
+    deleteBtn.className = 'city-btn';
+    deleteBtn.addEventListener('click', () => deleteCity(location));
+    btnContainer.appendChild(deleteBtn);
+
+    cardHeader.appendChild(btnContainer);
     card.appendChild(cardHeader);
 
-    const status = document.createElement('div');
-    status.className = 'status-text';
-    if (location.status == 'loading') status.textContent = 'Loading...';
-    else if (location.status == 'error') status.textContent = 'Error loading weather';
-    card.appendChild(status);
+    if (location.error) {
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'weather-error';
+        errorDiv.textContent = location.error;
+        card.appendChild(errorDiv);
+        return card;
+    }
 
     // curr
     if (location.weather?.current) {
@@ -206,15 +296,13 @@ function createWeatherCard(location) {
         current.className = 'current-weather';
 
         const temp = document.createElement('div');
-        temp.textContent = `Now: ${location.weather.current.temperature}°C`;
-        const wind = document.createElement('div');
-        wind.textContent = `Wind: ${location.weather.current.windspeed} km/h`;
-
+        temp.textContent = `temperature: ${location.weather.current.temperature}°C`;
         current.appendChild(temp);
-        current.appendChild(wind);
+
         card.appendChild(current);
     }
 
+    // forecast
     if (location.weather?.forecast) {
         const forecastContainer = document.createElement('div');
         forecastContainer.className = 'forecast-container';
@@ -229,9 +317,8 @@ function createWeatherCard(location) {
             dayTitle.textContent = dateObj.toLocaleDateString('en-US', {
                 weekday: 'short',
                 day: 'numeric',
-                month: 'short'    
+                month: 'short'
             });
-
 
             const partsContainer = document.createElement('div');
             partsContainer.className = 'day-parts';
@@ -242,19 +329,15 @@ function createWeatherCard(location) {
                 if (!part) return;
                 const partDiv = document.createElement('div');
                 partDiv.className = 'day-part';
-
                 const label = document.createElement('span');
                 label.textContent = partsMap[hour];
                 const temp = document.createElement('span');
                 temp.textContent = `${part.temp}°C`;
-
-                partDiv.appendChild(label);
-                partDiv.appendChild(temp);
+                partDiv.append(label, temp);
                 partsContainer.appendChild(partDiv);
             });
 
-            dayBlock.appendChild(dayTitle);
-            dayBlock.appendChild(partsContainer);
+            dayBlock.append(dayTitle, partsContainer);
             forecastContainer.appendChild(dayBlock);
         });
 
@@ -269,12 +352,13 @@ function createCityForm() {
     form.className = 'city-form';
 
     const input = document.createElement('input');
-    input.placeholder = 'Enter city name';
+    input.placeholder = 'Add new city by entering city-name!';
 
     const list = document.createElement('div');
     list.className = 'suggestions';
 
     const error = document.createElement('div');
+    error.id = 'form-error';
     error.className = 'form-error';
 
     form.append(input, list, error);
@@ -283,11 +367,9 @@ function createCityForm() {
         const value = input.value.trim();
         list.innerHTML = '';
         error.textContent = '';
-
         if (value.length < 2) return;
 
         const results = searchCities(value);
-
         if (results.length == 0) {
             error.textContent = 'City not found';
             return;
@@ -297,13 +379,11 @@ function createCityForm() {
             const item = document.createElement('div');
             item.className = 'suggestion-item';
             item.textContent = `${city.name}, ${city.country}`;
-
             item.addEventListener('click', () => {
                 addCity(city);
                 input.value = '';
                 list.innerHTML = '';
             });
-
             list.appendChild(item);
         });
     });
@@ -311,47 +391,18 @@ function createCityForm() {
     return form;
 }
 
-function addCity(city) {
-    if (locations.length == MAX_LOCATIONS) {
-        alert('Maximum number of cities reached');
-        return;
-    }
+function showFormError(message) {
+    const errorEl = document.getElementById('form-error');
+    if (!errorEl) return;
 
-    if (locations.some(l => l.name == city.name)) {
-        alert('City already added');
-        return;
-    }
-
-    const location = {
-        id: Date.now(),
-        name: `${city.name}, ${city.country}`,
-        lat: city.lat,
-        lon: city.lon,
-        weather: null,
-    };
-
-    locations.push(location);
-    saveToStorage();
-
-    updateLocationWeather(location);
-    renderLocations();
+    errorEl.textContent = message;
 }
 
-async function refreshCity(location, button) {
-    button.disabled = true;
-    const originalText = button.textContent;
-    button.textContent = 'Loading...';
+function clearFormError() {
+    const errorEl = document.getElementById('form-error');
+    if (!errorEl) return;
 
-    try {
-        await updateLocationWeather(location); 
-    } catch (err) {
-        console.error('Error updating weather for', location.name, err);
-        button.textContent = 'Error';
-        setTimeout(() => button.textContent = originalText, 2000); 
-    } finally {
-        button.disabled = false;
-        if (button.textContent !== 'Error') button.textContent = originalText;
-    }
+    errorEl.textContent = '';
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
