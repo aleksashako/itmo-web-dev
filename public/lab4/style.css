@@ -297,13 +297,78 @@ input[type="text"], input[type="date"], select {
 }
 
 
-@media (max-width: 600px) {
-    .weather-card {
-        width: 90%;
+@media (max-width: 768px) {
+
+    body {
+        font-size: 14px;
     }
 
-    .city-form, .refresh-all-btn {
+    .page-header {
+        padding: 8px 50px;
+    }
+
+    .page-header h1 {
+        font-size: 1.2em;
+    }
+
+    .refresh-all-btn,
+    .clear-all-btn {
+        font-size: 0.75em;
+        padding: 3px 6px;
+    }
+
+    .content {
+        padding: 0.5em;
+    }
+
+    .locations-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8em;
+    }
+
+    .weather-card,
+    .weather-card--main {
+        width: 350px;
+        max-width: 90%;
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .weather-card--main h2 {
+        font-size: 18px;
+    }
+
+    .weather-card--main .forecast-container {
+        gap: 8px;
+    }
+
+    .day-block {
+        min-width: 120px;
+        padding: 8px;
+    }
+
+    .day-title {
+        font-size: 0.85em;
+    }
+
+    .day-parts {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 4px;
+    }
+
+    .day-part {
+        font-size: 12px;
+        padding: 4px;
+    }
+
+    .city-form {
+        width: 100%;
+    }
+
+    .modal-content {
         width: 90%;
+        min-width: unset;
     }
 }
 
